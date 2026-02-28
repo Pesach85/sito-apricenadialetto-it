@@ -11,6 +11,16 @@ UPDATE #__modules
 SET content = REPLACE(content, 'http://images.web4web.it/w4w_190x60.jpg', '')
 WHERE content LIKE '%images.web4web.it/w4w_190x60.jpg%';
 
+UPDATE #__content
+SET introtext = REPLACE(introtext, 'https://images.web4web.it/w4w_190x60.jpg', ''),
+    `fulltext`  = REPLACE(`fulltext`,  'https://images.web4web.it/w4w_190x60.jpg', '')
+WHERE introtext LIKE '%https://images.web4web.it/w4w_190x60.jpg%'
+   OR `fulltext`  LIKE '%https://images.web4web.it/w4w_190x60.jpg%';
+
+UPDATE #__modules
+SET content = REPLACE(content, 'https://images.web4web.it/w4w_190x60.jpg', '')
+WHERE content LIKE '%https://images.web4web.it/w4w_190x60.jpg%';
+
 -- 2) Google Docs viewer -> HTTPS
 UPDATE #__content
 SET introtext = REPLACE(introtext, 'http://docs.google.com/gview?', 'https://docs.google.com/gview?'),

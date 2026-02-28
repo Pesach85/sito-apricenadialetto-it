@@ -18,6 +18,6 @@ defined( "_JEXEC" ) or die;?>
 <div class="itp-fblike-box<?php echo $moduleClassSfx;?>">
 <?php if (!empty($facebookPageLink)): ?>
 <?php $facebookPageHref = str_replace('http://', 'https://', $facebookPageLink); ?>
-<a class="fb-compact-link" href="<?php echo htmlspecialchars($facebookPageHref, ENT_COMPAT, 'UTF-8');?>" rel="noopener noreferrer" target="_blank">Visita la nostra pagina Facebook</a>
+<a class="fb-compact-link" href="<?php echo htmlspecialchars($facebookPageHref, ENT_COMPAT, 'UTF-8');?>" rel="noopener noreferrer" target="_blank">Apri la pagina Facebook</a>
 <?php endif; ?>
 </div>
