@@ -167,3 +167,31 @@ D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/rollback_assist.py -
 
 - Modalità predefinita in dry-run.
 - Esecuzione reale solo con doppia intenzione: `--apply --confirm I_UNDERSTAND`.
+
+## 10) One-shot operativo (backup + preflight + rollback plan)
+
+Script: `deploy/upgrade_one_shot.py`
+
+### Comando principale
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_one_shot.py
+```
+
+### Cosa fa in sequenza
+
+1. **Preflight remoto**: verifica PHP, spazio disco, permessi `cache/tmp`, presenza `configuration.php`, presenza `jat3` legacy.
+2. **Backup guardrail**: esegue `upgrade_guardrail_backup.py` (file+DB+manifest hash).
+3. **Rollback plan**: esegue dry-run `rollback_assist.py` sullo snapshot appena creato.
+4. Salva report completo in `upgrade_backups/<snapshot>/upgrade_one_shot_report.json`.
+
+### Opzioni utili
+
+```powershell
+# Usa snapshot esistente e salta nuovo backup
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_one_shot.py --skip-backup --snapshot 20260228_092042
+```
+
+### Regola pratica
+
+Procedere con upgrade solo se output finale è `ONE_SHOT_OK`.
