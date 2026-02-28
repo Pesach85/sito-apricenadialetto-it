@@ -553,3 +553,29 @@ Stato post-fix verificato:
 Nota:
 
 Questo hotfix rimuove la dipendenza runtime da JAT3 sulla index di produzione, mantenendo intatto il percorso di migrazione staging già completato.
+
+## 23) Ripristino layout originale produzione (eseguito)
+
+Situazione dopo hotfix precedente:
+
+- errore JAT3 sparito ma frontend mostrava layout `beez_20` non desiderato.
+
+Correzione applicata:
+
+Script: `deploy/restore_production_ja_elastica.py`
+
+Comando eseguito:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/restore_production_ja_elastica.py --apply --confirm I_UNDERSTAND
+```
+
+Stato verificato:
+
+- `home style` produzione: `ja_elastica` (`id=117`)
+- menu home (`id=435`) riallineato a `template_style_id=117`
+- `jat3` plugin confermato `enabled=1`
+
+Obiettivo ottenuto:
+
+Layout produzione riportato al tema storico “come prima”, mantenendo staging su percorso Joomla 4.

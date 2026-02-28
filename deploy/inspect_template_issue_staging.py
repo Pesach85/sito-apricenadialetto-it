@@ -5,6 +5,7 @@ import base64
 import json
 import os
 import posixpath
+import re
 import shlex
 
 import paramiko
@@ -90,11 +91,18 @@ def main() -> int:
 
     styles_table = db_cfg["dbprefix"] + "template_styles"
     menu_table = db_cfg["dbprefix"] + "menu"
+    content_table = db_cfg["dbprefix"] + "content"
+    categories_table = db_cfg["dbprefix"] + "categories"
 
     q_home_style = (
         "SELECT id,template,title,home FROM "
         + styles_table
         + " WHERE client_id=0 AND home='1'"
+    )
+    q_home_menu = (
+        "SELECT id,title,link,access,published,template_style_id FROM "
+        + menu_table
+        + " WHERE home=1 AND client_id=0 LIMIT 1"
     )
     q_legacy_menu = (
         "SELECT id,title,link,template_style_id FROM "
@@ -110,13 +118,14 @@ def main() -> int:
     code, out, err = run_mysql(ssh, db_cfg, q_legacy_menu)
     legacy_menu_rows = parse_table(out) if code == 0 else []
 
+    code, out, err = run_mysql(ssh, db_cfg, q_home_menu)
+    home_menu_rows = parse_table(out) if code == 0 else []
+
     code, out, err = ssh_exec(
         ssh,
         "grep -n 'public $template' " + shlex.quote(cfg_path) + " || true",
     )
     template_line = out.strip()
-
-    ssh.close()
 
     report = {
         "target": args.target,
@@ -124,9 +133,43 @@ def main() -> int:
         "config_template": db_cfg.get("template", ""),
         "config_template_line": template_line,
         "home_styles": home_rows,
+        "home_menu": home_menu_rows,
+        "home_article": [],
+        "home_category": [],
         "legacy_menu_assignments": legacy_menu_rows,
         "legacy_menu_count": len(legacy_menu_rows),
     }
+
+    if home_menu_rows and len(home_menu_rows[0]) >= 3:
+        home_link = home_menu_rows[0][2]
+        match = re.search(r"id=(\d+)", home_link)
+        if match:
+            article_id = match.group(1)
+            q_home_article = (
+                "SELECT id,title,state,access,catid FROM "
+                + content_table
+                + " WHERE id="
+                + article_id
+                + " LIMIT 1"
+            )
+            code, out, err = run_mysql(ssh, db_cfg, q_home_article)
+            if code == 0:
+                article_rows = parse_table(out)
+                report["home_article"] = article_rows
+                if article_rows and len(article_rows[0]) >= 5:
+                    catid = article_rows[0][4]
+                    q_home_category = (
+                        "SELECT id,title,published,access FROM "
+                        + categories_table
+                        + " WHERE id="
+                        + catid
+                        + " LIMIT 1"
+                    )
+                    code2, out2, err2 = run_mysql(ssh, db_cfg, q_home_category)
+                    if code2 == 0:
+                        report["home_category"] = parse_table(out2)
+
+    ssh.close()
 
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
