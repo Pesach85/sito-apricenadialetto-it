@@ -657,3 +657,28 @@ Documento operativo creato:
 Uso:
 
 - contiene sequenza rapida, criteri GO/NO-GO e rollback immediato.
+
+## 28) Simulazione cutover produzione (eseguita ora)
+
+Comando eseguito:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_one_shot.py
+```
+
+Esito:
+
+- `status`: `ONE_SHOT_OK`
+- `snapshot`: `20260228_235841`
+- backup file+DB con hash manifest completato
+- rollback dry-run validato sullo stesso snapshot
+
+Report principale:
+
+- `upgrade_backups/20260228_235841/upgrade_one_shot_report.json`
+
+Snapshot pronto per rollback immediato (se necessario):
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/rollback_assist.py --snapshot 20260228_235841 --apply --confirm I_UNDERSTAND
+```

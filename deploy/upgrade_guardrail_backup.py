@@ -90,17 +90,33 @@ def main() -> int:
     if code != 0:
         raise RuntimeError("Impossibile creare cartella backup remota: " + err.strip())
 
-    tar_cmd = (
-        "tar --warning=no-file-changed -czf "
+    tar_cmd_primary = (
+        "tar -czf "
         + shlex.quote(remote_site_archive)
         + " -C "
         + shlex.quote(posixpath.dirname(remote_root))
         + " "
         + shlex.quote(posixpath.basename(remote_root))
     )
-    code, out, err = ssh_exec(ssh, tar_cmd)
+    code, out, err = ssh_exec(ssh, tar_cmd_primary)
+
     if code != 0:
-        raise RuntimeError("Backup file remoto fallito: " + err.strip())
+        tar_cmd_fallback = (
+            "tar --ignore-failed-read -czf "
+            + shlex.quote(remote_site_archive)
+            + " -C "
+            + shlex.quote(posixpath.dirname(remote_root))
+            + " "
+            + shlex.quote(posixpath.basename(remote_root))
+        )
+        code2, out2, err2 = ssh_exec(ssh, tar_cmd_fallback)
+        if code2 != 0:
+            details = " | ".join(x for x in [out.strip(), err.strip(), out2.strip(), err2.strip()] if x)
+            raise RuntimeError("Backup file remoto fallito: " + details)
+
+    code, out, err = ssh_exec(ssh, "test -s " + shlex.quote(remote_site_archive) + " && echo OK || echo FAIL")
+    if code != 0 or out.strip() != "OK":
+        raise RuntimeError("Archivio sito remoto non valido o vuoto")
 
     db_cfg = get_db_config(ssh, remote_root)
     dump_cmd = (
@@ -118,7 +134,8 @@ def main() -> int:
     )
     code, out, err = ssh_exec(ssh, dump_cmd)
     if code != 0:
-        raise RuntimeError("Dump DB remoto fallito: " + err.strip())
+        details = " | ".join(x for x in [out.strip(), err.strip()] if x)
+        raise RuntimeError("Dump DB remoto fallito: " + details)
 
     sftp = ssh.open_sftp()
     sftp.get(remote_site_archive, local_site_archive)
