@@ -239,6 +239,16 @@ select:focus {
     border: 1px solid #bcbcbc;
     background: #fff;
     color: #1f1f1f;
+    border-radius: 4px;
+  }
+
+  #ja-search .inputbox:focus,
+  #mod-search-searchword:focus,
+  .moduletable .inputbox:focus,
+  .moduletable input[type="text"]:focus,
+  .moduletable input[type="search"]:focus {
+    border-color: #ec534d;
+    box-shadow: 0 0 0 2px rgba(236, 83, 77, .18);
   }
 
   .moduletable .search {
@@ -248,7 +258,8 @@ select:focus {
   #ja-search .button,
   #ja-search button {
     margin-top: 8px;
-    min-height: 40px;
+    min-height: 42px;
+    width: 100%;
     padding: 8px 14px;
   }
 
@@ -321,6 +332,14 @@ select:focus {
     min-height: 42px;
     margin-top: 4px;
     padding: 10px 12px;
+    font-size: 15px;
+  }
+
+  #contact-form input:focus,
+  #contact-form textarea:focus,
+  #contact-form select:focus {
+    border-color: #ec534d;
+    box-shadow: 0 0 0 2px rgba(236, 83, 77, .18);
   }
 
   #ja-social {

@@ -33,4 +33,4 @@ var isRTL = <?php echo $this->isRTL()?'true':'false' ?>;
 
 <?php JHTML::stylesheet ('', 'templates/system/css/system.css') ?>
 <?php JHTML::stylesheet ('', 'templates/system/css/general.css') ?>
-<link rel="stylesheet" type="text/css" href="<?php echo JURI::base(true)."/templates/".T3_ACTIVE_TEMPLATE ?>/css/modernize.css?v=20260228g" />
+<link rel="stylesheet" type="text/css" href="<?php echo JURI::base(true)."/templates/".T3_ACTIVE_TEMPLATE ?>/css/modernize.css?v=20260228h" />
