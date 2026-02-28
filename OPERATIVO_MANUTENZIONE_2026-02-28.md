@@ -430,3 +430,37 @@ Decisione operativa “quando cambiare PHP”:
 3. Poi procedere al distacco `jat3` (assegnazione style/template compatibile e disabilitazione plugin).
 4. Rieseguire `precheck_joomla4_staging.py`.
 5. **Produzione PHP resta invariata** finché non abbiamo `GO_J4_STAGING` + test verdi.
+
+## 19) Post-switch PHP staging + distacco JAT3 (eseguito flash)
+
+Conferma post-switch:
+
+- `php_version` staging rilevato: `7.4.33` (OK per bridge Joomla 4)
+
+Comandi eseguiti:
+
+```powershell
+# Verifica stato dopo cambio PHP
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/precheck_joomla4_staging.py
+
+# Distacco JAT3 (switch home style + disable plugin)
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/detach_jat3_staging.py --apply --confirm I_UNDERSTAND
+
+# Verifica finale readiness Joomla 4
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/precheck_joomla4_staging.py
+```
+
+Esito finale:
+
+- `status`: `GO_J4_STAGING`
+- blocker risolti: `PHP>=7.2.5` e `plg_system_jat3=0`
+- home style staging ora su `beez_20` (`template_style_id=4`)
+
+Report principali aggiornati:
+
+- `upgrade_backups/staging_precheck_j4_latest.json`
+- `upgrade_backups/staging_jat3_dependency_audit_latest.json`
+
+Prossimo step operativo immediato:
+
+Procedere con migrazione Joomla 4 su staging (produzione invariata).
