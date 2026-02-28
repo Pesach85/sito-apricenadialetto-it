@@ -602,3 +602,25 @@ Stato post-mitigazione:
 Nota decisionale:
 
 Per mantenere **layout storico JA Elastica** senza errori, produzione deve tornare a PHP legacy compatibile col ramo 2.5/JAT3 (oppure va completata la migrazione definitiva su stack moderno).
+
+## 25) Decisione operativa confermata: fallback lock su produzione
+
+Decisione:
+
+- mantenere produzione in fallback (`beez_20`) fino al completamento migrazione.
+
+Conferma stato attuale (rieseguita):
+
+- `home style`: `beez_20` (`id=4`)
+- `home menu` (`id=435`) con `template_style_id=4`
+- `legacy_menu_count`: `0`
+
+Comando di enforcement idempotente (riutilizzabile in qualsiasi momento):
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/hotfix_switch_production_template_fallback.py --apply --confirm I_UNDERSTAND
+```
+
+Regola fino a go-live migrazione:
+
+- non ripristinare `ja_elastica` su produzione finché stack non è completamente migrato e validato.
