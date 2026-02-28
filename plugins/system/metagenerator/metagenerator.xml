@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="1.6" type="plugin" group="system">
+    <name>PLG_SYSTEM_METAGENERATOR</name>
+    <author>Shikle.com</author>
+    <creationDate>July 2011</creationDate>
+    <copyright>Copyright (C) 2010 Juan Padial</copyright>
+    <license>GNU/GPL</license>
+    <authorUrl>www.shikle.com</authorUrl>
+    <version>2.0.3</version>
+    <description>PLG_SYSTEM_METAGENERATOR_XML_DESCRIPTION</description>
+    <files>
+        <filename plugin="metagenerator">metagenerator.php</filename>
+        <filename>index.html</filename>
+        <folder>language</folder>
+    </files>
+    <config>
+     <fields name="params">
+      <fieldset name="basic">
+        <field name="spacer1" type="spacer" default="PLG_METAGENERATOR_FRONT_PAGE_OPTIONS" label="PLG_METAGENERATOR_FRONT_PAGE_OPTIONS" description="" />
+        <field name="fpdisable" type="list" default="no" label="PLG_METAGENERATOR_FP_DISABLE_LBL" description="PLG_METAGENERATOR_FP_DISABLE_LBL_DESC">
+         		<option value="yes">PLG_METAGENERATOR_YES</option>
+ 			<option value="no">PLG_METAGENERATOR_NO</option>
+	</field>
+	<field name="fptitle" type="text" size="40" default="HOME" label="PLG_METAGENERATOR_OPTIONAL_FRONT_PAGE_TITLE" description="PLG_METAGENERATOR_OPTIONAL_FRONT_PAGE_DESC"/>
+	<field name="fptitorder" type="list" default="0" label="PLG_METAGENERATOR_FRONT_PAGE_TITLE_LAYOUT" description="PLG_METAGENERATOR_FRONT_PAGE_TITLE_LAYOUT_DESC">
+ 			<option value="0">PLG_METAGENERATOR_OPTIONAL_FP_TITLE_SITE_TITLE</option>
+ 			<option value="1">PLG_METAGENERATOR_SITE_TITLE_OPTIONAL_FP_TITLE</option>
+			<option value="2">PLG_METAGENERATOR_OPTIONAL_FP_TITLE</option>
+			<option value="3">PLG_METAGENERATOR_SITE_TITLE</option>
+	</field>
+	<field name="spacer2" type="spacer" default="PLG_METAGENERATOR_TITLE_OPTIONS" label="PLG_METAGENERATOR_TITLE_OPTIONS" description="" />
+	<field name="titorder" type="list" default="0" label="PLG_METAGENERATOR_TITLE_LAYOUT" description="PLG_METAGENERATOR_TITLE_LAYOUT_DESC">
+ 			<option value="0">PLG_METAGENERATOR_PAGE_TITLE_SITE_TITLE</option>
+ 			<option value="1">PLG_METAGENERATOR_SITE_TITLE_PAGE_TITLE</option>
+			<option value="2">PLG_METAGENERATOR_PAGE_TITLE</option>
+	</field>		
+	<field name="separator" type="text" size="1" default="|" label="PLG_METAGENERATOR_SEPARATOR" description="PLG_METAGENERATOR_SEPARATOR_DESC"/>	
+	<field name="categorytitle" type="radio" default="0" label="PLG_METAGENERATOR_REPLACE_SITE_NAME_WITH_CATEGORY_TITLE" description="PLG_METAGENERATOR_REPLACE_SITE_NAME_WITH_CATEGORY_TITLE_DESC">
+ 			<option value="0">PLG_METAGENERATOR_YES</option>
+ 			<option value="1">PLG_METAGENERATOR_NO</option>
+	</field>
+        <field name="spacer3" type="spacer" default="PLG_METAGENERATOR_MAX_CHARACTERS_FROM_ARTICLE" label="PLG_METAGENERATOR_MAX_CHARACTERS_FROM_ARTICLE" description="" />
+	<field name="maxcharacters" type="text" size="5" default="500" label="PLG_METAGENERATOR_ARTICLE_TEXT_CHARACTERS_PROCESSED" description="PLG_METAGENERATOR_ARTICLE_TEXT_CHARACTERS_PROCESSED_DESC"/>
+	<field name="spacer4" type="spacer" default="PLG_METAGENERATOR_PARAMS_FOR_METADESC" label="PLG_METAGENERATOR_PARAMS_FOR_METADESC" description="" /> 
+	<field name="length" type="text" size="5" default="200" label="PLG_METAGENERATOR_METADESC_LENGTH" description="PLG_METAGENERATOR_METADESC_LENGTH_DESC"/> 		
+	<field name="spacer5" type="spacer" default="PLG_METAGENERATOR_KEYWORDS_PARAMS" label="PLG_METAGENERATOR_KEYWORDS_PARAMS" description="" />
+	<field name="listexclude" type="textarea" label="PLG_METAGENERATOR_BLACKWORDS" rows="10" cols="20" default="" description="PLG_METAGENERATOR_BLACKWORDS_DESC"/>
+	<field name="goldwords" type="textarea" label="PLG_METAGENERATOR_GOLDWORDS" rows="10" cols="20" default="" description="PLG_METAGENERATOR_GOLDWORDS_DESC"/>
+        <field name="minlength" type="text" label="PLG_METAGENERATOR_KEYS_MINIMUM_LENGTH" default="5" description="PLG_METAGENERATOR_KEYS_MINIMUM_LENGTH_DESC"/>
+        <field name="maxwords" type="text" label="PLG_METAGENERATOR_MAX_NUMBER_OF_KEYWORDS" default="20" description="PLG_METAGENERATOR_MAX_NUMBER_OF_KEYWORDS_DESC"/>
+        <field name="spacer6" type="spacer" default="PLG_METAGENERATOR_CANONICAL_META_TAG" label="PLG_METAGENERATOR_CANONICAL_META_TAG" description="" />	
+        <field name="usecanonical" type="radio" default="0" label="PLG_METAGENERATOR_USE_CANONICAL_META_TAG" description="PLG_METAGENERATOR_USE_CANONICAL_META_TAG_DESC">
+ 			<option value="0">PLG_METAGENERATOR_YES</option>
+ 			<option value="1">PLG_METAGENERATOR_NO</option>
+	</field>
+	<field name="sitedomain" type="text" label="PLG_METAGENERATOR_SITE_DOMAIN" default="http://www.example.com" description="PLG_METAGENERATOR_SITE_DOMAIN_DESC"/>
+      </fieldset>
+     </fields>
+    </config>
+</extension>

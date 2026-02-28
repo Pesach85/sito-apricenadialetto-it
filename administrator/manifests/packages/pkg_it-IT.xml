@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<extension type="package" version="2.5">
+<name>Italian Language Pack</name>
+<packagename>it-IT</packagename>
+<version>2.5</version>
+<url></url>
+<packager></packager>
+<packagerurl></packagerurl>
+<description>2.5 Joomla Full Italian Language Package</description>
+<files>
+        <file type="language" client="site" id="it-IT">site_it-IT.zip</file>
+        <file type="language" client="administrator" id="it-IT">admin_it-IT.zip</file>
+</files>
+</extension>

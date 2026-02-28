@@ -1,0 +1,37 @@
+##
+# @package		Joomla
+# @copyright	Copyright (C) 2005 - 2012 Open Source Matters. All rights reserved.
+# @license		GNU General Public License version 2 or later; see LICENSE.txt
+##
+
+## Can be commented out if causes errors.
+Options +FollowSymLinks
+
+RewriteEngine On
+
+## Force HTTPS
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+## Mitigate mixed content from legacy content/plugins
+<IfModule mod_headers.c>
+Header always set Content-Security-Policy "upgrade-insecure-requests; block-all-mixed-content"
+</IfModule>
+
+## Begin - Rewrite rules to block out some common exploits.
+RewriteCond %{QUERY_STRING} base64_encode[^(]*\([^)]*\) [OR]
+RewriteCond %{QUERY_STRING} (<|%3C)([^s]*s)+cript.*(>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+RewriteRule .* index.php [F]
+## End - Rewrite rules to block out some common exploits.
+
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+## Begin - Joomla! core SEF Section.
+RewriteCond %{REQUEST_URI} !^/index\.php
+RewriteCond %{REQUEST_URI} /component/|(/[^.]*|\.(php|html?|feed|pdf|vcf|raw))$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule .* index.php [L]
+## End - Joomla! core SEF Section.

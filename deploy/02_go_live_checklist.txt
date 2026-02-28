@@ -1,0 +1,42 @@
+GO LIVE RAPIDO - APRICENADIALETTO.IT
+
+1) Backup
+- Backup file completo
+- Backup DB completo
+
+2) Upload file patchati
+- .htaccess
+- configuration.php
+- plugins/content/me_edocs/me_edocs.php
+- templates/gratis/src/yjsge.js
+- templates/gratis/src/cookie-consent.js
+- templates/gratis/yjsgcore/yjsg_head.php
+- templates/gratis/yjsgcore/yjsg_footer.php
+- templates/gratis/yjsgcore/yjsg_scripts.php
+- templates/ja_elastica/blocks/header.php
+- templates/ja_elastica/blocks/css.php
+- templates/ja_elastica/blocks/head.php
+- templates/ja_elastica/page/default.php
+- templates/ja_elastica/js/cookie-consent.js
+- modules/mod_itpfblikebox/tmpl/default.php
+
+3) DB cleanup
+- Eseguire deploy/01_fix_mixed_content.sql
+
+4) Cache
+- Svuotare cache Joomla
+- Svuotare cache browser/CDN
+
+5) Verifica urgente
+- /index.php/proverbi
+- /index.php/vocabolario
+- Console: nessun errore JS tipo addEvents/addEvent su null
+- Network: nessun mixed content bloccato
+
+6) Cookie compliance
+- Alla prima visita appare banner consenso
+- Con 'Rifiuta non essenziali': niente GA/Facebook
+- Con 'Accetta': GA/Facebook caricati
+
+7) Rollback (se necessario)
+- Ripristino backup file + DB
