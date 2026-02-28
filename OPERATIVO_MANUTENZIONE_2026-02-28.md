@@ -375,3 +375,30 @@ Prossimo step operativo:
 1. Login backend staging e controllo pagina aggiornamento Joomla.
 2. Smoke test frontend/admin (console JS, mixed-content, ricerca/menu).
 3. Decisione su `com_akeeba` in staging prima del passo successivo (Joomla 4).
+
+## 17) Precheck salto Joomla 4 su staging (eseguito)
+
+Script: `deploy/precheck_joomla4_staging.py`
+
+Comando:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/precheck_joomla4_staging.py
+```
+
+Report:
+
+- `upgrade_backups/staging_precheck_j4_latest.json`
+
+Esito attuale:
+
+- `status`: `NO_GO_J4_STAGING`
+- `php_version`: `5.6.40` (**bloccante**, minimo `7.2.5` per Joomla 4)
+- `joomla_version`: `3.10.12` (ponte OK)
+- `legacy blocker`: `plg_system_jat3` ancora `enabled=1`
+
+Prossimo colpo operativo (obbligatorio prima di Joomla 4):
+
+1. Portare **staging** a PHP >= `7.2.5` (preferibile `7.4` come ponte controllato).
+2. Disaccoppiare template/framework `jat3` (migrazione a template compatibile Joomla 4).
+3. Rieseguire `precheck_joomla4_staging.py` fino a `GO_J4_STAGING`.
