@@ -174,7 +174,7 @@ select:focus {
     width: 100%;
     height: auto;
     border-bottom: 0;
-    padding: 6px 10px 10px;
+    padding: 4px 10px 8px;
     box-sizing: border-box;
   }
 
@@ -195,12 +195,16 @@ select:focus {
     box-shadow: none;
   }
 
+  #ja-search form.search label {
+    display: none !important;
+  }
+
   #ja-search .inputbox {
     box-sizing: border-box;
-    height: 40px;
-    font-size: 15px;
+    height: 34px;
+    font-size: 14px;
     line-height: 1.3;
-    padding: 8px 10px;
+    padding: 6px 8px;
     text-indent: 0;
     width: 100%;
     border: 1px solid #bcbcbc;
@@ -233,10 +237,10 @@ select:focus {
   .moduletable input[type="search"] {
     box-sizing: border-box;
     width: 100% !important;
-    min-height: 40px;
-    font-size: 15px;
+    min-height: 34px;
+    font-size: 14px;
     line-height: 1.3;
-    padding: 8px 10px;
+    padding: 6px 8px;
     border: 1px solid #bcbcbc;
     background: #fff;
     color: #1f1f1f;
@@ -253,7 +257,7 @@ select:focus {
   }
 
   .moduletable .search {
-    padding: 4px 0 0;
+    padding: 0;
   }
 
   #ja-search input[type="submit"],

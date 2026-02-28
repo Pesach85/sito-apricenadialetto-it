@@ -24,6 +24,12 @@ defined( "_JEXEC" ) or die;?>
 <?php return; ?>
 <?php endif; ?>
 
+<?php if (!empty($facebookPageLink)): ?>
+<a href="<?php echo htmlspecialchars($facebookPageLink, ENT_COMPAT, 'UTF-8');?>" rel="noopener noreferrer" target="_blank">Visita la nostra pagina Facebook</a>
+<?php endif; ?>
+</div>
+<?php return; ?>
+
 <?php switch ($params->get("fbRendering",0)){ 
     
     case 1: // XFBML ?>
