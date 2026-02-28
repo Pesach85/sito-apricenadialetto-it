@@ -41,18 +41,47 @@ $sloganText = JText::_(trim($this->getParam('sloganText'))); ?>
 <div id="ja-top" class="clearfix">
 	<?php if($this->countModules('search')) : ?>
 	<div id="ja-search">
-		<span class="search-btn">Search</span>
+		<span class="search-btn" tabindex="0" role="button" aria-label="Apri ricerca">Search</span>
 		<jdoc:include type="modules" name="search" />
 	</div>
 	<script type="text/javascript">
 		// toggle search box active when click on search button
 		var searchInput = $('mod-search-searchword');
 		var searchBox = $('ja-search');
+		var searchBtn = $$('#ja-search .search-btn')[0];
 		$$('.search-btn').addEvent ('mouseenter', function () {
 			if (searchInput) {
 				searchInput.focus();
 			}
 		});
+		if (searchBtn && searchBox) {
+			searchBtn.addEvents({
+				'click': function (event) {
+					if (event && event.preventDefault) {
+						event.preventDefault();
+					}
+					searchBox.toggleClass('active');
+					if (searchBox.hasClass('active') && searchInput) {
+						searchInput.focus();
+					}
+				},
+				'keydown': function (event) {
+					if (!event) {
+						return;
+					}
+					var keyCode = event.code || event.keyCode;
+					if (keyCode === 13 || keyCode === 32) {
+						if (event.preventDefault) {
+							event.preventDefault();
+						}
+						searchBox.toggleClass('active');
+						if (searchBox.hasClass('active') && searchInput) {
+							searchInput.focus();
+						}
+					}
+				}
+			});
+		}
 		if (searchInput && searchBox) {
 			searchInput.addEvents ({
 				'blur': function () {searchBox.removeClass ('active');},

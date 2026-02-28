@@ -170,12 +170,107 @@ select:focus {
   #ja-search {
     position: relative;
     right: auto;
+    width: 100%;
+    height: auto;
+    border-bottom: 0;
+    padding: 8px 10px;
+    box-sizing: border-box;
+  }
+
+  #ja-search .search-btn {
+    display: none;
   }
 
   #ja-search form.search {
-    right: 0;
-    width: calc(100vw - 32px);
-    max-width: 320px;
+    display: block !important;
+    float: none;
+    position: static;
+    top: auto;
+    right: auto;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #ja-search .inputbox {
+    box-sizing: border-box;
+    height: 42px;
+    font-size: 16px;
+    line-height: 1.2;
+    padding: 8px 10px;
+    text-indent: 0;
+    width: 100%;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #222;
+  }
+
+  #ja-search .button,
+  #ja-search button {
+    margin-top: 8px;
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  #component-contact,
+  #contact-form,
+  #component-contact #emailForm {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #contact-slider .contact-image {
+    float: none;
+    display: block;
+    margin: 10px auto;
+    max-width: 100%;
+  }
+
+  #contact-form dl dt,
+  #contact-form dl dd,
+  #contact-form label {
+    float: none;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #contact-form dl dd {
+    margin-bottom: 10px;
+  }
+
+  #contact-form dl dd input,
+  #contact-form dl dd textarea,
+  #contact-form dl dd input.required,
+  #contact-form dl dd textarea.required,
+  #contact-form input,
+  #contact-form textarea,
+  #contact-form select {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100%;
+    font-size: 16px;
+    line-height: 1.35;
+    min-height: 42px;
+    padding: 9px 10px;
+  }
+
+  #contact-form textarea,
+  #contact-form dl dd textarea,
+  #contact-form dl dd textarea.required {
+    min-height: 140px;
+  }
+
+  #contact-form .button,
+  #contact-form button,
+  #component-contact .button,
+  #component-contact button {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
   }
 
   #ja-social {
