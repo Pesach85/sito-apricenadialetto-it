@@ -288,3 +288,28 @@ Stato confermato post-audit:
 - `mod_itpfblikebox` → `enabled=0`
 - `plg_system_jat3` → `enabled=1` (mantenuto per ponte 3.10)
 - `com_akeeba` → `enabled=1` (valutazione successiva)
+
+## 15) Precheck finale avvio upgrade Joomla 3.10 (staging)
+
+Script: `deploy/precheck_joomla310_staging.py`
+
+Comando:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/precheck_joomla310_staging.py
+```
+
+Report:
+
+- `upgrade_backups/staging_precheck_j310_latest.json`
+
+Esito attuale:
+
+- `status`: `GO_J310_STAGING`
+- `php_version`: `5.6.40`
+- `joomla_version`: `2.5.4`
+- staging isolato confermato (`dbprefix=stgc57_`, `force_ssl=0`, `tmp/log` su staging)
+
+Prossima azione immediata:
+
+Procedere con aggiornamento Joomla su staging verso 3.10 (ponte), mantenendo produzione invariata.
