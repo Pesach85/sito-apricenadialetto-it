@@ -624,3 +624,36 @@ D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/hotfix_switch_produc
 Regola fino a go-live migrazione:
 
 - non ripristinare `ja_elastica` su produzione finché stack non è completamente migrato e validato.
+
+## 26) Smoke check staging Joomla 4 (eseguito rapido)
+
+Script:
+
+- `deploy/smoke_check_staging_j4.py`
+
+Comando:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/smoke_check_staging_j4.py
+```
+
+Esito:
+
+- `status`: `SMOKE_OK`
+- `php_version`: `7.4.33`
+- `joomla_version`: `4.4.13`
+- legacy critiche confermate disattivate su staging.
+
+Report:
+
+- `upgrade_backups/staging_smoke_j4_latest.json`
+
+## 27) Piano cutover produzione pronto
+
+Documento operativo creato:
+
+- `CUTOVER_PRODUZIONE_J4.md`
+
+Uso:
+
+- contiene sequenza rapida, criteri GO/NO-GO e rollback immediato.
