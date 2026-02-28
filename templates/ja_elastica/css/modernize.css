@@ -161,16 +161,21 @@ select:focus {
     position: relative;
     top: auto;
     right: auto;
+    float: none;
+    clear: both;
     width: 100%;
+    height: auto;
     border-left: 0;
     border-top: 1px dotted #666;
     margin-top: 8px;
     margin-bottom: 12px;
+    overflow: visible;
   }
 
   #ja-search {
     position: relative;
     right: auto;
+    float: none;
     width: 100%;
     height: auto;
     border-bottom: 0;
@@ -195,7 +200,7 @@ select:focus {
     box-shadow: none;
   }
 
-  #ja-search form.search label {
+  #ja-search .search label {
     display: none !important;
   }
 
