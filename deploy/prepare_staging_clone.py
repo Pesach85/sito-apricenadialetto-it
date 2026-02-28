@@ -5,6 +5,7 @@ import base64
 import json
 import os
 import posixpath
+import re
 import shlex
 
 import paramiko
@@ -242,48 +243,56 @@ def main() -> int:
         ensure_ok(code, err, "clone db by prefix")
 
     staging_config = posixpath.join(staging_root, "configuration.php")
-    escaped_old_db = site_cfg["db"].replace("'", "\\'")
     escaped_new_db = target_db.replace("'", "\\'")
-    escaped_old_prefix = source_prefix.replace("'", "\\'")
     escaped_new_prefix = target_prefix.replace("'", "\\'")
-    escaped_old_tmp = site_cfg["tmp_path"].replace("'", "\\'")
-    escaped_old_log = site_cfg["log_path"].replace("'", "\\'")
     new_tmp = posixpath.join(staging_root, "tmp")
     new_log = posixpath.join(staging_root, "logs")
 
-    patch_config_php = (
+    code, out, err = ssh_exec(ssh, "chmod u+w " + shlex.quote(staging_config))
+    ensure_ok(code, err, "chmod staging configuration writable")
+
+    sftp = ssh.open_sftp()
+    try:
+        with sftp.open(staging_config, "r") as handle:
+            config_text = handle.read().decode("utf-8", errors="ignore")
+
+        config_text = re.sub(r"public\s+\$db\s*=\s*'[^']*';", "public $db = '" + escaped_new_db + "';", config_text, count=1)
+        config_text = re.sub(r"public\s+\$dbprefix\s*=\s*'[^']*';", "public $dbprefix = '" + escaped_new_prefix + "';", config_text, count=1)
+        config_text = re.sub(r"public\s+\$tmp_path\s*=\s*'[^']*';", "public $tmp_path = '" + new_tmp + "';", config_text, count=1)
+        config_text = re.sub(r"public\s+\$log_path\s*=\s*'[^']*';", "public $log_path = '" + new_log + "';", config_text, count=1)
+        config_text = re.sub(r"public\s+\$force_ssl\s*=\s*'[0-9]+';", "public $force_ssl = '0';", config_text, count=1)
+
+        with sftp.open(staging_config, "w") as handle:
+            handle.write(config_text)
+    finally:
+        sftp.close()
+
+    verify_patch_cmd = (
         "php -r "
         + shlex.quote(
             "$f='"
             + staging_config
-            + "';"
-            + "$c=file_get_contents($f);"
-            + "$c=str_replace(\"public $db = '"
-            + escaped_old_db
-            + "';\",\"public $db = '"
-            + escaped_new_db
-            + "';\",$c);"
-            + "$c=str_replace(\"public $dbprefix = '"
-            + escaped_old_prefix
-            + "';\",\"public $dbprefix = '"
-            + escaped_new_prefix
-            + "';\",$c);"
-            + "$c=str_replace(\"public $tmp_path = '"
-            + escaped_old_tmp
-            + "';\",\"public $tmp_path = '"
-            + new_tmp
-            + "';\",$c);"
-            + "$c=str_replace(\"public $log_path = '"
-            + escaped_old_log
-            + "';\",\"public $log_path = '"
-            + new_log
-            + "';\",$c);"
-            + "$c=preg_replace('/public $force_ssl = \'[0-9]+\';/',\"public $force_ssl = '0';\",$c);"
-            + "file_put_contents($f,$c);"
+            + "';require $f;$c=new JConfig();"
+            + "echo 'DB='.$c->db.PHP_EOL;"
+            + "echo 'DBPREFIX='.$c->dbprefix.PHP_EOL;"
+            + "echo 'FORCE_SSL='.$c->force_ssl.PHP_EOL;"
+            + "echo 'TMP_PATH='.$c->tmp_path.PHP_EOL;"
+            + "echo 'LOG_PATH='.$c->log_path.PHP_EOL;"
         )
     )
-    code, out, err = ssh_exec(ssh, patch_config_php)
-    ensure_ok(code, err, "patch staging configuration")
+    code, out, err = ssh_exec(ssh, verify_patch_cmd)
+    ensure_ok(code, err, "verify staging config")
+    if (
+        f"DB={target_db}" not in out
+        or f"DBPREFIX={target_prefix}" not in out
+        or "FORCE_SSL=0" not in out
+        or f"TMP_PATH={new_tmp}" not in out
+        or f"LOG_PATH={new_log}" not in out
+    ):
+        ssh.close()
+        raise RuntimeError("staging configuration non allineata dopo patch")
+
+    ssh_exec(ssh, "chmod 444 " + shlex.quote(staging_config))
 
     cache_clear_cmd = (
         "find "
