@@ -502,3 +502,24 @@ Risultato finale:
 Nota operativa immediata:
 
 Eseguire un giro backend staging per eventuali step di finalizzazione DB/UI richiesti da Joomla 4 (se presenti), poi smoke test funzionale completo frontend/admin.
+
+## 21) Fix messaggio "The plugin JAT3 framework must be installed and enabled" (eseguito)
+
+Root cause rilevata:
+
+- alcune voci menu staging puntavano ancora a `template_style_id` legacy (`ja_elastica` / `gratis`), quindi su quelle pagine Joomla tentava ancora il rendering template JAT3.
+
+Correzione applicata:
+
+- esteso `deploy/detach_jat3_staging.py` per riallineare automaticamente **tutte** le voci menu con style legacy verso lo style target (`beez_20`).
+
+Esecuzione:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/detach_jat3_staging.py --apply --confirm I_UNDERSTAND
+```
+
+Verifica:
+
+- `legacy_menu_items_to_rewire=0` al dry-run successivo
+- `GO_J4_STAGING` confermato da `deploy/precheck_joomla4_staging.py`

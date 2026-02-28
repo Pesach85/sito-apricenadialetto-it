@@ -76,6 +76,10 @@ def sql_str(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
+def sql_int(value: str) -> str:
+    return str(int(value))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Distacca JAT3 su staging con switch template home")
     parser.add_argument("--target-template", default="beez_20", help="Template da impostare come home style")
@@ -134,6 +138,36 @@ def main() -> int:
 
     target_style_id = target_rows[0][0]
 
+    q_legacy_styles = (
+        "SELECT id,template,title FROM "
+        + styles_table
+        + " WHERE client_id=0 AND (template='ja_elastica' OR template='gratis')"
+    )
+    code, out, err = run_mysql(ssh, db_cfg, q_legacy_styles)
+    if code != 0:
+        ssh.close()
+        raise RuntimeError("Query legacy styles fallita: " + err.strip())
+    legacy_style_rows = parse_table(out)
+    legacy_style_ids = [row[0] for row in legacy_style_rows if row and row[0] != target_style_id]
+
+    legacy_menu_count = 0
+    if legacy_style_ids:
+        in_clause = ",".join(sql_int(style_id) for style_id in legacy_style_ids)
+        q_legacy_menu_count = (
+            "SELECT COUNT(*) FROM "
+            + menu_table
+            + " WHERE template_style_id IN ("
+            + in_clause
+            + ")"
+        )
+        code, out, err = run_mysql(ssh, db_cfg, q_legacy_menu_count)
+        if code != 0:
+            ssh.close()
+            raise RuntimeError("Query legacy menu count fallita: " + err.strip())
+        rows = parse_table(out)
+        if rows and rows[0]:
+            legacy_menu_count = int(rows[0][0])
+
     q_jat3 = (
         "SELECT extension_id,enabled FROM "
         + ext_table
@@ -151,6 +185,8 @@ def main() -> int:
     print("target_template=", args.target_template)
     print("target_style=", target_rows[0])
     print("jat3_enabled=", jat3_enabled)
+    print("legacy_style_ids=", legacy_style_ids)
+    print("legacy_menu_items_to_rewire=", legacy_menu_count)
 
     if not args.apply:
         print("DRY_RUN: aggiungi --apply --confirm I_UNDERSTAND per eseguire")
@@ -187,6 +223,22 @@ def main() -> int:
     if code != 0:
         ssh.close()
         raise RuntimeError("Aggiornamento menu home fallito: " + err.strip())
+
+    if legacy_style_ids:
+        in_clause = ",".join(sql_int(style_id) for style_id in legacy_style_ids)
+        up_legacy_menu = (
+            "UPDATE "
+            + menu_table
+            + " SET template_style_id="
+            + sql_int(target_style_id)
+            + " WHERE template_style_id IN ("
+            + in_clause
+            + ")"
+        )
+        code, out, err = run_mysql(ssh, db_cfg, up_legacy_menu)
+        if code != 0:
+            ssh.close()
+            raise RuntimeError("Rewire menu legacy styles fallito: " + err.strip())
 
     up_jat3 = (
         "UPDATE "
