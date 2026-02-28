@@ -464,3 +464,41 @@ Report principali aggiornati:
 Prossimo step operativo immediato:
 
 Procedere con migrazione Joomla 4 su staging (produzione invariata).
+
+## 20) Migrazione Joomla 4 su staging (eseguita)
+
+Script: `deploy/update_staging_to_j4.py`
+
+Comandi eseguiti:
+
+```powershell
+# Dry-run preflight
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/update_staging_to_j4.py
+
+# Apply reale su staging
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/update_staging_to_j4.py --apply --confirm I_UNDERSTAND
+```
+
+Esito:
+
+- `status`: `J4_UPDATE_OK`
+- `detected_version`: `4.4.13`
+
+Verifiche post-update eseguite:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/precheck_joomla4_staging.py
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/verify_staging_clone.py
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/audit_staging_extensions.py
+```
+
+Risultato finale:
+
+- `GO_J4_STAGING`
+- `STAGING_VERIFY_OK`
+- `AUDIT_OK`
+- estensioni legacy critiche confermate disattivate (`com_akeeba`, `com_phocafavicon`, `jat3`, `me_edocs`, `mod_itpfblikebox`)
+
+Nota operativa immediata:
+
+Eseguire un giro backend staging per eventuali step di finalizzazione DB/UI richiesti da Joomla 4 (se presenti), poi smoke test funzionale completo frontend/admin.
