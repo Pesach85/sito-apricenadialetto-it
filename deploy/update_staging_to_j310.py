@@ -30,6 +30,7 @@ def ssh_exec(ssh: paramiko.SSHClient, command: str) -> tuple[int, str, str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Aggiorna clone staging verso Joomla 3.10 (overlay package)")
+    parser.add_argument("--target", choices=["staging", "production"], default="staging", help="Ambiente target")
     parser.add_argument("--apply", action="store_true", help="Esegue l'update reale")
     parser.add_argument("--confirm", default="", help="Conferma esplicita: I_UNDERSTAND")
     parser.add_argument("--package-url", default=DEFAULT_PACKAGE_URL, help="URL package Joomla 3.10 update")
@@ -42,7 +43,7 @@ def main() -> int:
     key_path = cfg["privateKeyPath"]
     passphrase = cfg.get("passphrase") or os.environ.get("SFTP_PASSPHRASE", "")
     remote_root = cfg["remotePath"].rstrip("/")
-    staging_root = remote_root + "_staging"
+    target_root = remote_root + "_staging" if args.target == "staging" else remote_root
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     work_root = f"/home/{username}/upgrade_work/j310_{ts}"
@@ -54,7 +55,8 @@ def main() -> int:
     ssh.connect(host, port=port, username=username, pkey=pkey, timeout=30)
 
     plan = {
-        "staging_root": staging_root,
+        "target": args.target,
+        "target_root": target_root,
         "package_url": args.package_url,
         "work_root": work_root,
         "package_file": package_file,
@@ -63,11 +65,11 @@ def main() -> int:
     print(json.dumps(plan, ensure_ascii=False, indent=2))
 
     preflight_cmds = {
-        "staging_exists": f"test -d {shlex.quote(staging_root)} && echo OK || echo FAIL",
+        "target_exists": f"test -d {shlex.quote(target_root)} && echo OK || echo FAIL",
         "unzip_available": "command -v unzip >/dev/null 2>&1 && echo OK || echo MISSING",
         "curl_available": "command -v curl >/dev/null 2>&1 && echo OK || echo MISSING",
         "wget_available": "command -v wget >/dev/null 2>&1 && echo OK || echo MISSING",
-        "disk_space": f"df -h {shlex.quote(posixpath.dirname(staging_root))} | tail -n 1",
+        "disk_space": f"df -h {shlex.quote(posixpath.dirname(target_root))} | tail -n 1",
     }
 
     preflight: dict[str, str] = {}
@@ -77,9 +79,9 @@ def main() -> int:
         preflight[key] = value
         print(f"PREFLIGHT {key}: {value}")
 
-    if preflight.get("staging_exists") != "OK":
+    if preflight.get("target_exists") != "OK":
         ssh.close()
-        raise RuntimeError("Staging root non trovato")
+        raise RuntimeError("Target root non trovato")
     if preflight.get("unzip_available") != "OK":
         ssh.close()
         raise RuntimeError("unzip non disponibile sul server")
@@ -112,9 +114,9 @@ def main() -> int:
         ssh.close()
         raise RuntimeError("download package fallito: " + err.strip())
 
-    ssh_exec(ssh, "chmod u+w " + shlex.quote(posixpath.join(staging_root, "configuration.php")))
+    ssh_exec(ssh, "chmod u+w " + shlex.quote(posixpath.join(target_root, "configuration.php")))
 
-    unzip_cmd = "unzip -o " + shlex.quote(package_file) + " -d " + shlex.quote(staging_root)
+    unzip_cmd = "unzip -o " + shlex.quote(package_file) + " -d " + shlex.quote(target_root)
     code, out, err = ssh_exec(ssh, unzip_cmd)
     if code != 0:
         ssh.close()
@@ -124,7 +126,7 @@ def main() -> int:
         "php -r "
         + shlex.quote(
             "$f='"
-            + posixpath.join(staging_root, "administrator/manifests/files/joomla.xml")
+            + posixpath.join(target_root, "administrator/manifests/files/joomla.xml")
             + "';"
             + "$x=@simplexml_load_file($f);"
             + "if($x && isset($x->version)){echo trim((string)$x->version);}"
@@ -135,10 +137,10 @@ def main() -> int:
 
     cache_clear_cmd = (
         "find "
-        + shlex.quote(staging_root + "/cache")
+        + shlex.quote(target_root + "/cache")
         + " -type f ! -name index.html -delete; "
         + "find "
-        + shlex.quote(staging_root + "/tmp")
+        + shlex.quote(target_root + "/tmp")
         + " -type f ! -name index.html -delete"
     )
     code_cache, out_cache, err_cache = ssh_exec(ssh, cache_clear_cmd)
@@ -146,7 +148,7 @@ def main() -> int:
         ssh.close()
         raise RuntimeError("cache clear staging fallito: " + err_cache.strip())
 
-    ssh_exec(ssh, "chmod 444 " + shlex.quote(posixpath.join(staging_root, "configuration.php")))
+    ssh_exec(ssh, "chmod 444 " + shlex.quote(posixpath.join(target_root, "configuration.php")))
 
     ssh.close()
 

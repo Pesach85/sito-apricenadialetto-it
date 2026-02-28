@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import base64
 import json
 import os
@@ -70,6 +71,10 @@ def run_mysql(ssh: paramiko.SSHClient, db_cfg: dict, sql: str) -> tuple[int, str
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Smoke check Joomla 4 per staging/production")
+    parser.add_argument("--target", choices=["staging", "production"], default="staging")
+    args = parser.parse_args()
+
     cfg = load_sftp_config()
     host = cfg["host"]
     port = int(cfg.get("port", 22))
@@ -77,7 +82,7 @@ def main() -> int:
     key_path = cfg["privateKeyPath"]
     passphrase = cfg.get("passphrase") or os.environ.get("SFTP_PASSPHRASE", "")
     remote_root = cfg["remotePath"].rstrip("/")
-    staging_root = remote_root + "_staging"
+    target_root = remote_root + "_staging" if args.target == "staging" else remote_root
 
     pkey = paramiko.RSAKey.from_private_key_file(key_path, password=passphrase)
     ssh = paramiko.SSHClient()
@@ -86,7 +91,8 @@ def main() -> int:
 
     report: dict[str, object] = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "staging_root": staging_root,
+        "target": args.target,
+        "target_root": target_root,
         "checks": {},
     }
 
@@ -98,7 +104,7 @@ def main() -> int:
         "php -r "
         + shlex.quote(
             "$f='"
-            + posixpath.join(staging_root, "administrator/manifests/files/joomla.xml")
+            + posixpath.join(target_root, "administrator/manifests/files/joomla.xml")
             + "';$x=@simplexml_load_file($f);if($x&&isset($x->version)){echo trim((string)$x->version);}"
         ),
     )
@@ -107,17 +113,17 @@ def main() -> int:
 
     code, out, err = ssh_exec(
         ssh,
-        "test -f " + shlex.quote(posixpath.join(staging_root, "administrator/index.php")) + " && echo OK || echo MISSING",
+        "test -f " + shlex.quote(posixpath.join(target_root, "administrator/index.php")) + " && echo OK || echo MISSING",
     )
     report["checks"]["admin_index"] = {"ok": out.strip() == "OK", "value": out.strip()}
 
     code, out, err = ssh_exec(
         ssh,
-        "find " + shlex.quote(staging_root + "/cache") + " -maxdepth 1 -type f | wc -l",
+        "find " + shlex.quote(target_root + "/cache") + " -maxdepth 1 -type f | wc -l",
     )
     report["checks"]["cache_file_count"] = {"ok": code == 0, "value": out.strip()}
 
-    db_cfg = get_staging_db_cfg(ssh, staging_root)
+    db_cfg = get_staging_db_cfg(ssh, target_root)
     ext_table = db_cfg["dbprefix"] + "extensions"
     sql = (
         "SELECT type,element,folder,enabled FROM "
@@ -137,7 +143,7 @@ def main() -> int:
             state[key] = row[3] == "1"
     report["checks"]["legacy_state"] = {"ok": True, "state": state}
 
-    code, out, err = ssh_exec(ssh, "tail -n 80 " + shlex.quote(staging_root + "/error_log") + " 2>/dev/null | tail -n 40")
+    code, out, err = ssh_exec(ssh, "tail -n 80 " + shlex.quote(target_root + "/error_log") + " 2>/dev/null | tail -n 40")
     report["checks"]["error_log_tail"] = {"ok": code == 0, "value": out.strip()}
 
     ssh.close()
@@ -149,7 +155,8 @@ def main() -> int:
     )
     report["status"] = "SMOKE_OK" if overall_ok else "SMOKE_FAIL"
 
-    out_path = os.path.join(LOCAL_ROOT, "upgrade_backups", "staging_smoke_j4_latest.json")
+    out_name = "staging_smoke_j4_latest.json" if args.target == "staging" else "production_smoke_j4_latest.json"
+    out_path = os.path.join(LOCAL_ROOT, "upgrade_backups", out_name)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump(report, handle, ensure_ascii=False, indent=2)

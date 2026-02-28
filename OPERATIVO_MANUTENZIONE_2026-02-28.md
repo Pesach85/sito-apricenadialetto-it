@@ -682,3 +682,41 @@ Snapshot pronto per rollback immediato (se necessario):
 ```powershell
 D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/rollback_assist.py --snapshot 20260228_235841 --apply --confirm I_UNDERSTAND
 ```
+
+## 29) Cutover produzione eseguito (senza esitazioni)
+
+Sequenza applicata in produzione:
+
+1. Disattivazione legacy critica:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/disable_staging_legacy_extensions.py --target production --disable-akeeba --disable-jat3 --apply --confirm I_UNDERSTAND
+```
+
+2. Bridge Joomla `2.5 -> 3.10.12`:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/update_staging_to_j310.py --target production --apply --confirm I_UNDERSTAND
+```
+
+3. Upgrade Joomla `3.10.12 -> 4.4.13`:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/update_staging_to_j4.py --target production --apply --confirm I_UNDERSTAND
+```
+
+4. Smoke check finale produzione:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/smoke_check_staging_j4.py --target production
+```
+
+Esito finale:
+
+- `joomla_version`: `4.4.13`
+- `status`: `SMOKE_OK`
+- report: `upgrade_backups/production_smoke_j4_latest.json`
+
+Nota operativa:
+
+- i warning legacy in `error_log` possono contenere righe storiche del vecchio stack; per validazione finale usare test pagina reale frontend/backend dopo hard refresh.
