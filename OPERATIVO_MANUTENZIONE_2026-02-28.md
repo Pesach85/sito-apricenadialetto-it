@@ -95,3 +95,45 @@ Sequenza operativa consigliata:
 - Nessun mixed-content in Network.
 - Banner/cmp cookie funzionante e blocco script terzi prima del consenso.
 - Backup ripristinabile testato.
+
+## 8) Automazione upgrade “zero-loss” (consigliato)
+
+Obiettivo: automatizzare le parti rischiose prima di ogni upgrade (backup completo + verifica integrità), riducendo al minimo la perdita dati.
+
+### Script pronto
+
+- `deploy/upgrade_guardrail_backup.py`
+
+### Cosa fa automaticamente
+
+1. Legge connessione SFTP da `.vscode/sftp.json` (host, porta, utente, key, passphrase).
+2. Crea snapshot remoto con timestamp in `/home/<utente>/upgrade_backups/<timestamp>/`.
+3. Genera archivio completo file sito (`tar.gz`) del `public_html`.
+4. Legge credenziali DB da `configuration.php` lato server.
+5. Genera dump database compresso (`mysqldump | gzip`).
+6. Scarica entrambi i backup in locale in `upgrade_backups/<timestamp>/`.
+7. Crea `backup_manifest.json` con hash SHA256 dei file per verifica integrità.
+
+### Comando operativo unico (PowerShell)
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_guardrail_backup.py
+```
+
+### Regola di sicurezza prima di aggiornare Joomla/estensioni
+
+- Non iniziare nessun upgrade se lo script non termina con `BACKUP_OK`.
+- Verificare che in `upgrade_backups/<timestamp>/` esistano:
+   - `site_files_<timestamp>.tar.gz`
+   - `db_<timestamp>.sql.gz`
+   - `backup_manifest.json`
+
+### Rollback rapido (se qualcosa va storto)
+
+1. Ripristino file dal `site_files_<timestamp>.tar.gz` sul server.
+2. Ripristino DB da `db_<timestamp>.sql.gz`.
+3. Pulizia cache Joomla (`cache/` e `tmp/`), verifica frontend/admin.
+
+### Nota importante
+
+L’upgrade completo 2.5 -> 3.10 -> 4.4 -> 5.x resta **semi-automatico**: backup, verifiche e deploy sono automatizzabili; i passaggi applicativi major (compatibilità estensioni/template) richiedono checkpoint manuali in staging.
