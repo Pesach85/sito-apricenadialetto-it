@@ -313,3 +313,42 @@ Esito attuale:
 Prossima azione immediata:
 
 Procedere con aggiornamento Joomla su staging verso 3.10 (ponte), mantenendo produzione invariata.
+
+## 16) Upgrade Joomla 3.10 su staging (eseguito)
+
+Script: `deploy/update_staging_to_j310.py`
+
+Comandi eseguiti:
+
+```powershell
+# Dry-run preflight
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/update_staging_to_j310.py
+
+# Apply reale su staging
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/update_staging_to_j310.py --apply --confirm I_UNDERSTAND
+```
+
+Risultato:
+
+- `status`: `J310_UPDATE_OK`
+- `detected_version`: `3.10.12`
+- cache staging pulita dopo overlay package
+
+Verifica post-update eseguita:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/verify_staging_clone.py
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/audit_staging_extensions.py
+```
+
+Esito:
+
+- `STAGING_VERIFY_OK`
+- `AUDIT_OK`
+- stato legacy invariato in staging: `mod_itpfblikebox=0`, `me_edocs=0`, `com_phocafavicon=0`, `jat3=1`, `com_akeeba=1`
+
+Prossimo step operativo:
+
+1. Login backend staging e controllo pagina aggiornamento Joomla.
+2. Smoke test frontend/admin (console JS, mixed-content, ricerca/menu).
+3. Decisione su `com_akeeba` in staging prima del passo successivo (Joomla 4).
