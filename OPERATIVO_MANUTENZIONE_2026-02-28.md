@@ -195,3 +195,49 @@ D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_one_shot.py 
 ### Regola pratica
 
 Procedere con upgrade solo se output finale è `ONE_SHOT_OK`.
+
+## 11) Clone staging automatico (step successivo upgrade)
+
+Script: `deploy/prepare_staging_clone.py`
+
+### Comandi
+
+```powershell
+# Dry-run (raccomandato prima)
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/prepare_staging_clone.py
+
+# Esecuzione reale clone staging
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/prepare_staging_clone.py --apply --confirm I_UNDERSTAND
+```
+
+### Cosa prepara
+
+1. Preflight tool server (`rsync`, `mysql`, `mysqldump`, permessi).
+2. Clone file in `<remotePath>_staging`.
+3. Clone DB in `<db>_stg`.
+4. Patch `configuration.php` staging (`db`, `tmp_path`, `log_path`, `force_ssl=0`).
+5. Pulizia cache staging.
+
+### Nota hosting (già verificata)
+
+Se il provider non consente `CREATE DATABASE`, lo script fa fallback automatico:
+
+- usa lo **stesso database** della produzione,
+- clona tutte le tabelle Joomla su un **prefix staging dedicato**,
+- aggiorna `configuration.php` staging con `dbprefix` staging.
+
+Valori correnti rilevati in ambiente:
+
+- `staging_root`: `/home/w19158/public_html_staging`
+- `staging_db`: `w19158_io` (fallback stesso DB)
+- `staging_dbprefix`: `stgc57_`
+
+## 12) Quando cambiare versione PHP (decisione operativa)
+
+- **Produzione adesso:** NO (restare su PHP attuale finché non finisce la migrazione app).
+- **Staging:**
+   1. portare Joomla a 3.10 sul clone staging,
+   2. test estensioni/template,
+   3. passare staging a PHP 7.4 (ponte),
+   4. migrare a Joomla 4/5,
+   5. solo dopo test verdi, impostare produzione a PHP 8.2/8.3 in finestra go-live.
