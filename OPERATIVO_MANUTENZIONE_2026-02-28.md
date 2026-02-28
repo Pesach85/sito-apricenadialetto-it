@@ -241,3 +241,32 @@ Valori correnti rilevati in ambiente:
    3. passare staging a PHP 7.4 (ponte),
    4. migrare a Joomla 4/5,
    5. solo dopo test verdi, impostare produzione a PHP 8.2/8.3 in finestra go-live.
+
+## 13) Audit estensioni staging (pre-upgrade 3.10)
+
+Script: `deploy/audit_staging_extensions.py`
+
+Comando:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/audit_staging_extensions.py
+```
+
+Report generato:
+
+- `upgrade_backups/staging_extension_audit_latest.json`
+
+Risultati attuali (staging):
+
+- `com_akeeba` 3.5.2 → rischio **ALTA**
+- `com_phocafavicon` 2.0.3 → rischio **ALTA**
+- `plg_system_jat3` (JA T3 Framework) → rischio **CRITICA**
+- `plg_content_me_edocs` 1.2 → rischio **ALTA**
+- `mod_itpfblikebox` 1.4 → rischio **ALTA**
+
+Ordine operativo immediato prima del salto 3.10:
+
+1. Disattivare in staging `mod_itpfblikebox` e `plg_content_me_edocs`.
+2. Valutare rimozione/disattivazione `com_phocafavicon` (favicon via template).
+3. Verificare impatto `com_akeeba` (upgrade o disattivazione temporanea in staging).
+4. Mantenere `jat3` per il passaggio ponte 3.10, ma pianificare sostituzione framework/template prima del salto a Joomla 4/5.
