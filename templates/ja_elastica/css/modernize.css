@@ -196,15 +196,53 @@ select:focus {
 
   #ja-search .inputbox {
     box-sizing: border-box;
-    height: 42px;
+    height: 44px;
     font-size: 16px;
-    line-height: 1.2;
-    padding: 8px 10px;
+    line-height: 1.3;
+    padding: 10px 12px;
     text-indent: 0;
     width: 100%;
-    border: 1px solid #ccc;
+    border: 1px solid #bcbcbc;
     background: #fff;
-    color: #222;
+    color: #1f1f1f;
+  }
+
+  #ja-search .inputbox::placeholder,
+  #mod-search-searchword::placeholder,
+  .moduletable .inputbox::placeholder {
+    color: #666;
+    opacity: 1;
+  }
+
+  #ja-search .inputbox:-ms-input-placeholder,
+  #mod-search-searchword:-ms-input-placeholder,
+  .moduletable .inputbox:-ms-input-placeholder {
+    color: #666;
+  }
+
+  #ja-search .inputbox::-ms-input-placeholder,
+  #mod-search-searchword::-ms-input-placeholder,
+  .moduletable .inputbox::-ms-input-placeholder {
+    color: #666;
+  }
+
+  #mod-search-searchword,
+  .moduletable .inputbox,
+  .moduletable input[type="text"],
+  .moduletable input[type="search"] {
+    box-sizing: border-box;
+    width: 100% !important;
+    min-height: 44px;
+    font-size: 16px;
+    line-height: 1.3;
+    padding: 10px 12px;
+    border: 1px solid #bcbcbc;
+    background: #fff;
+    color: #1f1f1f;
+  }
+
+  .moduletable .search {
+    padding: 8px 0 0;
   }
 
   #ja-search .button,
