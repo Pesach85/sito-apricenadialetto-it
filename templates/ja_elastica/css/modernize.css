@@ -279,8 +279,11 @@ select:focus {
   }
 
   #component-contact #emailForm {
-    border-top: 0;
-    padding-top: 8px;
+    border: 1px solid #d8d8d8;
+    border-radius: 6px;
+    background: #f7f7f7;
+    padding: 10px;
+    box-sizing: border-box;
   }
 
   #contact-slider .contact-image {
@@ -324,6 +327,9 @@ select:focus {
     line-height: 1.35;
     min-height: 42px;
     padding: 9px 10px;
+    border: 1px solid #c8c8c8;
+    background: #fff;
+    border-radius: 4px;
   }
 
   #contact-form textarea,
