@@ -402,3 +402,31 @@ Prossimo colpo operativo (obbligatorio prima di Joomla 4):
 1. Portare **staging** a PHP >= `7.2.5` (preferibile `7.4` come ponte controllato).
 2. Disaccoppiare template/framework `jat3` (migrazione a template compatibile Joomla 4).
 3. Rieseguire `precheck_joomla4_staging.py` fino a `GO_J4_STAGING`.
+
+## 18) Audit dipendenze JAT3 su staging (eseguito)
+
+Script: `deploy/audit_jat3_dependencies_staging.py`
+
+Comando:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/audit_jat3_dependencies_staging.py
+```
+
+Report:
+
+- `upgrade_backups/staging_jat3_dependency_audit_latest.json`
+
+Risultati chiave:
+
+- `plg_system_jat3`: `enabled=1`
+- template home attivo: `ja_elastica` (`style id=117`)
+- template alternativi già presenti: `atomic`, `beez_20`, `beez5`, `gratis`
+
+Decisione operativa “quando cambiare PHP”:
+
+1. **Adesso** cambiare PHP solo su **staging** a `7.4`.
+2. Subito dopo, verificare sito/admin staging.
+3. Poi procedere al distacco `jat3` (assegnazione style/template compatibile e disabilitazione plugin).
+4. Rieseguire `precheck_joomla4_staging.py`.
+5. **Produzione PHP resta invariata** finché non abbiamo `GO_J4_STAGING` + test verdi.
