@@ -115,7 +115,7 @@ defined('_JEXEC') or die;
 
 <div id="cookieConsentBanner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#ffffff; border-top:1px solid #cccccc; padding:10px; font-size:12px; line-height:1.4;">
 	Questo sito usa cookie tecnici e, previo consenso, cookie analytics/marketing.
-	<a href="/index.php/privacy-policy" style="margin-right:8px;">Informativa</a>
+	<a href="https://apricenadialetto.it/index.php/privacy-policy" style="margin-right:8px;">Informativa</a>
 	<a href="#" id="cookieConsentAccept" style="margin-right:8px;">Accetta</a>
 	<a href="#" id="cookieConsentReject">Rifiuta non essenziali</a>
 </div>
