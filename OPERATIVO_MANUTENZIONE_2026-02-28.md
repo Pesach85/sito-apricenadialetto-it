@@ -137,3 +137,33 @@ D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_guardrail_ba
 ### Nota importante
 
 L’upgrade completo 2.5 -> 3.10 -> 4.4 -> 5.x resta **semi-automatico**: backup, verifiche e deploy sono automatizzabili; i passaggi applicativi major (compatibilità estensioni/template) richiedono checkpoint manuali in staging.
+
+## 9) Rollback assistito (script pronto)
+
+Script: `deploy/rollback_assist.py`
+
+### Uso base
+
+```powershell
+# Lista snapshot disponibili
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/rollback_assist.py --list
+
+# Dry-run (nessuna modifica) su snapshot specifico
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/rollback_assist.py --snapshot 20260228_092042
+
+# Rollback reale (richiede conferma esplicita)
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/rollback_assist.py --snapshot 20260228_092042 --apply --confirm I_UNDERSTAND
+```
+
+### Cosa fa
+
+1. Carica i dati SFTP da `.vscode/sftp.json`.
+2. Ricarica su server gli archivi dello snapshot scelto.
+3. Ripristina file sito da `tar.gz`.
+4. Ripristina DB da `sql.gz`.
+5. Pulisce cache Joomla (`cache/`, `tmp/`).
+
+### Protezioni incluse
+
+- Modalità predefinita in dry-run.
+- Esecuzione reale solo con doppia intenzione: `--apply --confirm I_UNDERSTAND`.
