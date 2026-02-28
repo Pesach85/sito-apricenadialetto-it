@@ -579,3 +579,26 @@ Stato verificato:
 Obiettivo ottenuto:
 
 Layout produzione riportato al tema storico “come prima”, mantenendo staging su percorso Joomla 4.
+
+## 24) Ricomparsa errore JAT3 su produzione: causa e mitigazione immediata
+
+Nuova evidenza runtime produzione:
+
+- `PHP production`: `7.4.33`
+- stack legacy (`Joomla 2.5 + JAT3`) mostra incompatibilità note su PHP moderni (warning/deprecazioni core), con ricomparsa intermittente del messaggio JAT3.
+
+Mitigazione immediata applicata (stabile):
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/hotfix_switch_production_template_fallback.py --apply --confirm I_UNDERSTAND
+```
+
+Stato post-mitigazione:
+
+- `home style` produzione: `beez_20`
+- `legacy_menu_count`: `0`
+- messaggio JAT3 non più legato al routing home/menu.
+
+Nota decisionale:
+
+Per mantenere **layout storico JA Elastica** senza errori, produzione deve tornare a PHP legacy compatibile col ramo 2.5/JAT3 (oppure va completata la migrazione definitiva su stack moderno).
