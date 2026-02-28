@@ -270,3 +270,21 @@ Ordine operativo immediato prima del salto 3.10:
 2. Valutare rimozione/disattivazione `com_phocafavicon` (favicon via template).
 3. Verificare impatto `com_akeeba` (upgrade o disattivazione temporanea in staging).
 4. Mantenere `jat3` per il passaggio ponte 3.10, ma pianificare sostituzione framework/template prima del salto a Joomla 4/5.
+
+## 14) Disattivazione selettiva legacy su staging (eseguita)
+
+Script: `deploy/disable_staging_legacy_extensions.py`
+
+Comando applicato:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/disable_staging_legacy_extensions.py --apply --confirm I_UNDERSTAND
+```
+
+Stato confermato post-audit:
+
+- `com_phocafavicon` → `enabled=0`
+- `plg_content_me_edocs` → `enabled=0`
+- `mod_itpfblikebox` → `enabled=0`
+- `plg_system_jat3` → `enabled=1` (mantenuto per ponte 3.10)
+- `com_akeeba` → `enabled=1` (valutazione successiva)
