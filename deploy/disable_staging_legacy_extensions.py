@@ -67,6 +67,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Disattiva estensioni legacy su staging (safe by default)")
     parser.add_argument("--apply", action="store_true", help="Esegue realmente le disattivazioni")
     parser.add_argument("--confirm", default="", help="Conferma esplicita: I_UNDERSTAND")
+    parser.add_argument("--disable-akeeba", action="store_true", help="Disattiva anche com_akeeba in staging")
     args = parser.parse_args()
 
     cfg = load_sftp_config()
@@ -97,6 +98,8 @@ def main() -> int:
         + "(type='component' AND element='com_phocafavicon') OR "
         + "(type='plugin' AND folder='system' AND element='jat3')"
     )
+    if args.disable_akeeba:
+        list_sql += " OR (type='component' AND element='com_akeeba')"
     code, out, err = run_mysql(ssh, db_cfg, list_sql)
     if code != 0:
         ssh.close()
@@ -106,6 +109,8 @@ def main() -> int:
     print("db=", db_cfg["db"])
     print("dbprefix=", prefix)
     print("target_disable: mod_itpfblikebox, me_edocs, com_phocafavicon")
+    if args.disable_akeeba:
+        print("target_disable_extra: com_akeeba")
     print("target_keep_enabled: jat3")
     print("CURRENT_STATE")
     print(out.strip())
@@ -128,6 +133,8 @@ def main() -> int:
         + "(type='plugin' AND folder='content' AND element='me_edocs') OR "
         + "(type='component' AND element='com_phocafavicon')"
     )
+    if args.disable_akeeba:
+        disable_ext_sql += " OR (type='component' AND element='com_akeeba')"
     code, out, err = run_mysql(ssh, db_cfg, disable_ext_sql)
     if code != 0:
         ssh.close()
@@ -152,6 +159,8 @@ def main() -> int:
         + "(type='component' AND element='com_phocafavicon') OR "
         + "(type='plugin' AND folder='system' AND element='jat3')"
     )
+    if args.disable_akeeba:
+        verify_sql += " OR (type='component' AND element='com_akeeba')"
     code, out, err = run_mysql(ssh, db_cfg, verify_sql)
     if code != 0:
         ssh.close()

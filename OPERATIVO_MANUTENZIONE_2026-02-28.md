@@ -347,6 +347,29 @@ Esito:
 - `AUDIT_OK`
 - stato legacy invariato in staging: `mod_itpfblikebox=0`, `me_edocs=0`, `com_phocafavicon=0`, `jat3=1`, `com_akeeba=1`
 
+### Delta operativo immediato (eseguito)
+
+Comando applicato per hardening aggiuntivo:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/disable_staging_legacy_extensions.py --disable-akeeba --apply --confirm I_UNDERSTAND
+```
+
+Verifica successiva eseguita:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/audit_staging_extensions.py
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/verify_staging_clone.py
+```
+
+Stato attuale estensioni legacy su staging:
+
+- `com_akeeba=0`
+- `com_phocafavicon=0`
+- `plg_content_me_edocs=0`
+- `mod_itpfblikebox=0`
+- `plg_system_jat3=1` (mantenuto per ponte tecnico)
+
 Prossimo step operativo:
 
 1. Login backend staging e controllo pagina aggiornamento Joomla.
