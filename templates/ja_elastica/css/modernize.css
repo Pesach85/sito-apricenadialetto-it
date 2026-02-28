@@ -120,6 +120,17 @@ select:focus {
   box-shadow: 0 -4px 14px rgba(0, 0, 0, .12);
 }
 
+.itp-fblike-box {
+  margin: 0;
+  padding: 2px 0;
+}
+
+.itp-fblike-box .fb-compact-link {
+  display: inline-block;
+  font-size: .95em;
+  line-height: 1.35;
+}
+
 @media (max-width: 1199px) {
   .main {
     width: auto;
@@ -181,6 +192,14 @@ select:focus {
     border-bottom: 0;
     padding: 4px 10px 8px;
     box-sizing: border-box;
+  }
+
+  .itp-fblike-box {
+    padding: 0;
+  }
+
+  .itp-fblike-box .fb-compact-link {
+    font-size: .9em;
   }
 
   #ja-search .search-btn {
