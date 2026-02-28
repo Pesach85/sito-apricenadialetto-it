@@ -523,3 +523,33 @@ Verifica:
 
 - `legacy_menu_items_to_rewire=0` al dry-run successivo
 - `GO_J4_STAGING` confermato da `deploy/precheck_joomla4_staging.py`
+
+## 22) Hotfix produzione per errore index JAT3 (eseguito)
+
+Sintomo segnalato:
+
+- pagina `index` con messaggio: `The plugin JAT3 framework must be installed and enabled.`
+
+Diagnosi rapida:
+
+- lo staging era già pulito;
+- in **produzione** il template home era ancora `ja_elastica` con assegnazioni menu legacy.
+
+Correzione applicata su produzione:
+
+Script: `deploy/hotfix_switch_production_template_fallback.py`
+
+Comando eseguito:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/hotfix_switch_production_template_fallback.py --apply --confirm I_UNDERSTAND
+```
+
+Stato post-fix verificato:
+
+- `home style`: `beez_20` (`id=4`)
+- `legacy_menu_count`: `0`
+
+Nota:
+
+Questo hotfix rimuove la dipendenza runtime da JAT3 sulla index di produzione, mantenendo intatto il percorso di migrazione staging già completato.
