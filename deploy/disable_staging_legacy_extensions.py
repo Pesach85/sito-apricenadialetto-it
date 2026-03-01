@@ -65,11 +65,9 @@ def run_mysql(ssh: paramiko.SSHClient, db_cfg: dict, sql: str) -> tuple[int, str
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Disattiva estensioni legacy su staging (safe by default)")
-    parser.add_argument("--target", choices=["staging", "production"], default="staging", help="Ambiente target")
     parser.add_argument("--apply", action="store_true", help="Esegue realmente le disattivazioni")
     parser.add_argument("--confirm", default="", help="Conferma esplicita: I_UNDERSTAND")
     parser.add_argument("--disable-akeeba", action="store_true", help="Disattiva anche com_akeeba in staging")
-    parser.add_argument("--disable-jat3", action="store_true", help="Disattiva anche plg_system_jat3")
     args = parser.parse_args()
 
     cfg = load_sftp_config()
@@ -79,14 +77,14 @@ def main() -> int:
     key_path = cfg["privateKeyPath"]
     passphrase = cfg.get("passphrase") or os.environ.get("SFTP_PASSPHRASE", "")
     remote_root = cfg["remotePath"].rstrip("/")
-    target_root = remote_root + "_staging" if args.target == "staging" else remote_root
+    staging_root = remote_root + "_staging"
 
     pkey = paramiko.RSAKey.from_private_key_file(key_path, password=passphrase)
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(host, port=port, username=username, pkey=pkey, timeout=25)
 
-    db_cfg = get_staging_config(ssh, target_root)
+    db_cfg = get_staging_config(ssh, staging_root)
     prefix = db_cfg["dbprefix"]
     extensions = prefix + "extensions"
     modules = prefix + "modules"
@@ -107,17 +105,13 @@ def main() -> int:
         ssh.close()
         raise RuntimeError("Query estensioni fallita: " + err.strip())
 
-    print("LEGACY_DISABLE_PLAN")
-    print("target=", args.target)
+    print("STAGING_DISABLE_PLAN")
     print("db=", db_cfg["db"])
     print("dbprefix=", prefix)
     print("target_disable: mod_itpfblikebox, me_edocs, com_phocafavicon")
     if args.disable_akeeba:
         print("target_disable_extra: com_akeeba")
-    if args.disable_jat3:
-        print("target_disable_extra: jat3")
-    else:
-        print("target_keep_enabled: jat3")
+    print("target_keep_enabled: jat3")
     print("CURRENT_STATE")
     print(out.strip())
 
@@ -141,8 +135,6 @@ def main() -> int:
     )
     if args.disable_akeeba:
         disable_ext_sql += " OR (type='component' AND element='com_akeeba')"
-    if args.disable_jat3:
-        disable_ext_sql += " OR (type='plugin' AND folder='system' AND element='jat3')"
     code, out, err = run_mysql(ssh, db_cfg, disable_ext_sql)
     if code != 0:
         ssh.close()
@@ -176,10 +168,10 @@ def main() -> int:
 
     cache_clear_cmd = (
         "find "
-        + shlex.quote(target_root + "/cache")
+        + shlex.quote(staging_root + "/cache")
         + " -type f ! -name index.html -delete; "
         + "find "
-        + shlex.quote(target_root + "/tmp")
+        + shlex.quote(staging_root + "/tmp")
         + " -type f ! -name index.html -delete"
     )
     code, out_cache, err_cache = ssh_exec(ssh, cache_clear_cmd)
@@ -191,7 +183,7 @@ def main() -> int:
 
     print("UPDATED_STATE")
     print(out.strip())
-    print("LEGACY_DISABLE_OK")
+    print("STAGING_DISABLE_OK")
     return 0
 
 

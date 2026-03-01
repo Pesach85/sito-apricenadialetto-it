@@ -235,6 +235,12 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
             <jdoc:include type="modules" name="bottom-b" style="card" />
         </div>
         <?php endif; ?>
+
+        <?php if ($this->countModules('fb_articolo', true)) : ?>
+        <div class="grid-child container-facebook-bottom fb-consent-gated" data-consent-category="marketing" hidden>
+            <jdoc:include type="modules" name="fb_articolo" style="none" />
+        </div>
+        <?php endif; ?>
     </div>
 
     <?php if ($this->countModules('footer', true)) : ?>
@@ -250,6 +256,73 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
             <span class="icon-arrow-up icon-fw" aria-hidden="true"></span>
         </a>
     <?php endif; ?>
+
+    <div id="cookie-consent" class="cookie-consent" role="dialog" aria-live="polite" aria-label="Informativa privacy e cookie" hidden>
+        <p>
+            Questo sito utilizza cookie tecnici e, previo consenso, contenuti di terze parti (es. Facebook). Puoi accettare o rifiutare i cookie non essenziali. Leggi l'informativa completa: <a href="/privacy-policy.html" rel="noopener">Privacy Policy</a>.
+        </p>
+        <div class="cookie-consent-actions">
+            <button type="button" class="cookie-btn cookie-btn-reject" data-consent="reject">Rifiuta</button>
+            <button type="button" class="cookie-btn cookie-btn-accept" data-consent="accept">Accetta</button>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var STORAGE_KEY = 'apricena_cookie_consent_v1';
+        var banner = document.getElementById('cookie-consent');
+
+        function applyConsent(value) {
+            var allowMarketing = value === 'accept';
+            var gatedBlocks = document.querySelectorAll('.fb-consent-gated[data-consent-category="marketing"]');
+
+            gatedBlocks.forEach(function (node) {
+                if (allowMarketing) {
+                    node.removeAttribute('hidden');
+                } else {
+                    node.setAttribute('hidden', 'hidden');
+                }
+            });
+        }
+
+        function getConsent() {
+            try {
+                return localStorage.getItem(STORAGE_KEY);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function setConsent(value) {
+            try {
+                localStorage.setItem(STORAGE_KEY, value);
+            } catch (e) {}
+            applyConsent(value);
+            if (banner) {
+                banner.setAttribute('hidden', 'hidden');
+            }
+        }
+
+        var consent = getConsent();
+
+        if (consent === 'accept' || consent === 'reject') {
+            applyConsent(consent);
+        } else {
+            applyConsent('reject');
+            if (banner) {
+                banner.removeAttribute('hidden');
+            }
+        }
+
+        if (banner) {
+            banner.querySelectorAll('[data-consent]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    setConsent(button.getAttribute('data-consent'));
+                });
+            });
+        }
+    })();
+    </script>
 
     <jdoc:include type="modules" name="debug" style="none" />
 </body>

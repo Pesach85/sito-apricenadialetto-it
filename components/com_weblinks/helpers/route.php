@@ -127,7 +127,12 @@ abstract class WeblinksHelperRoute
 	protected static function _findItem($needles = null)
 	{
 		$app		= JFactory::getApplication();
-		$menus		= $app->getMenu('site');
+		$menus		= method_exists($app, 'getMenu') ? $app->getMenu('site') : null;
+
+		if (!$menus)
+		{
+			return null;
+		}
 
 		// Prepare the reverse lookup array.
 		if (self::$lookup === null) {

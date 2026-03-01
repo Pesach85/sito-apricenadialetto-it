@@ -1,9 +1,10 @@
 <?php
 /**
- * @package		Joomla.Site
- * @subpackage	com_users
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Site
+ * @subpackage  com_users
+ *
+ * @copyright   (C) 2009 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
@@ -11,34 +12,36 @@ defined('_JEXEC') or die;
 /**
  * Users Route Helper
  *
- * @package		Joomla.Site
- * @subpackage	com_users
- * @since		1.6
+ * @since       1.6
+ * @deprecated  4.0
  */
 class UsersHelperRoute
 {
 	/**
 	 * Method to get the menu items for the component.
 	 *
-	 * @return	array		An array of menu items.
-	 * @since	1.6
+	 * @return  array  	An array of menu items.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function &getItems()
 	{
 		static $items;
 
 		// Get the menu items for this component.
-		if (!isset($items)) {
-			// Include the site app in case we are loading this from the admin.
-			require_once JPATH_SITE.'/includes/application.php';
+		if (!isset($items))
+		{
+			$component = JComponentHelper::getComponent('com_users');
+			$items     = JFactory::getApplication()->getMenu()->getItems('component_id', $component->id);
 
-			$app	= JFactory::getApplication();
-			$menu	= $app->getMenu();
-			$com	= JComponentHelper::getComponent('com_users');
-			$items	= $menu->getItems('component_id', $com->id);
-
-			// If no items found, set to empty array.
-			if (!$items) {
+			$menu	= method_exists($app, 'getMenu') ? $app->getMenu() : null;
+			if (!$menu) {
+				$items = array();
+				return $items;
+			}
+			if (!$items)
+			{
 				$items = array();
 			}
 		}
@@ -49,141 +52,152 @@ class UsersHelperRoute
 	/**
 	 * Method to get a route configuration for the login view.
 	 *
-	 * @return	mixed		Integer menu id on success, null on failure.
-	 * @since	1.6
-	 * @static
+	 * @return  mixed  	Integer menu id on success, null on failure.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function getLoginRoute()
 	{
 		// Get the items.
-		$items	= self::getItems();
-		$itemid	= null;
+		$items  = self::getItems();
 
 		// Search for a suitable menu id.
-		foreach ($items as $item) {
-			if (isset($item->query['view']) && $item->query['view'] === 'login') {
-				$itemid = $item->id;
-				break;
+		foreach ($items as $item)
+		{
+			if (isset($item->query['view']) && $item->query['view'] === 'login' && (empty($item->query['layout']) || $item->query['layout'] === 'default'))
+			{
+				return $item->id;
 			}
 		}
 
-		return $itemid;
+		return null;
 	}
 
 	/**
 	 * Method to get a route configuration for the profile view.
 	 *
-	 * @return	mixed		Integer menu id on success, null on failure.
-	 * @since	1.6
+	 * @return  mixed  	Integer menu id on success, null on failure.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function getProfileRoute()
 	{
 		// Get the items.
-		$items	= self::getItems();
-		$itemid	= null;
+		$items  = self::getItems();
 
 		// Search for a suitable menu id.
-		//Menu link can only go to users own profile.
+		// Menu link can only go to users own profile.
 
-		foreach ($items as $item) {
-			if (isset($item->query['view']) && $item->query['view'] === 'profile') {
-				$itemid = $item->id;
-				break;
+		foreach ($items as $item)
+		{
+			if (isset($item->query['view']) && $item->query['view'] === 'profile')
+			{
+				return $item->id;
 			}
-
 		}
-		return $itemid;
+
+		return null;
 	}
 
 	/**
 	 * Method to get a route configuration for the registration view.
 	 *
-	 * @return	mixed		Integer menu id on success, null on failure.
-	 * @since	1.6
+	 * @return  mixed  	Integer menu id on success, null on failure.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function getRegistrationRoute()
 	{
 		// Get the items.
-		$items	= self::getItems();
-		$itemid	= null;
+		$items  = self::getItems();
 
 		// Search for a suitable menu id.
-		foreach ($items as $item) {
-			if (isset($item->query['view']) && $item->query['view'] === 'registration') {
-				$itemid = $item->id;
-				break;
+		foreach ($items as $item)
+		{
+			if (isset($item->query['view']) && $item->query['view'] === 'registration')
+			{
+				return $item->id;
 			}
 		}
 
-		return $itemid;
+		return null;
 	}
 
 	/**
 	 * Method to get a route configuration for the remind view.
 	 *
-	 * @return	mixed		Integer menu id on success, null on failure.
-	 * @since	1.6
+	 * @return  mixed  	Integer menu id on success, null on failure.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function getRemindRoute()
 	{
 		// Get the items.
-		$items	= self::getItems();
-		$itemid	= null;
+		$items  = self::getItems();
 
 		// Search for a suitable menu id.
-		foreach ($items as $item) {
-			if (isset($item->query['view']) && $item->query['view'] === 'remind') {
-				$itemid = $item->id;
-				break;
+		foreach ($items as $item)
+		{
+			if (isset($item->query['view']) && $item->query['view'] === 'remind')
+			{
+				return $item->id;
 			}
 		}
 
-		return $itemid;
+		return null;
 	}
 
 	/**
 	 * Method to get a route configuration for the resend view.
 	 *
-	 * @return	mixed		Integer menu id on success, null on failure.
-	 * @since	1.6
+	 * @return  mixed  	Integer menu id on success, null on failure.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function getResendRoute()
 	{
 		// Get the items.
-		$items	= self::getItems();
-		$itemid	= null;
+		$items  = self::getItems();
 
 		// Search for a suitable menu id.
-		foreach ($items as $item) {
-			if (isset($item->query['view']) && $item->query['view'] === 'resend') {
-				$itemid = $item->id;
-				break;
+		foreach ($items as $item)
+		{
+			if (isset($item->query['view']) && $item->query['view'] === 'resend')
+			{
+				return $item->id;
 			}
 		}
 
-		return $itemid;
+		return null;
 	}
 
 	/**
 	 * Method to get a route configuration for the reset view.
 	 *
-	 * @return	mixed		Integer menu id on success, null on failure.
-	 * @since	1.6
+	 * @return  mixed  	Integer menu id on success, null on failure.
+	 *
+	 * @since       1.6
+	 * @deprecated  4.0
 	 */
 	public static function getResetRoute()
 	{
 		// Get the items.
-		$items	= self::getItems();
-		$itemid	= null;
+		$items  = self::getItems();
 
 		// Search for a suitable menu id.
-		foreach ($items as $item) {
-			if (isset($item->query['view']) && $item->query['view'] === 'reset') {
-				$itemid = $item->id;
-				break;
+		foreach ($items as $item)
+		{
+			if (isset($item->query['view']) && $item->query['view'] === 'reset')
+			{
+				return $item->id;
 			}
 		}
 
-		return $itemid;
+		return null;
 	}
 }

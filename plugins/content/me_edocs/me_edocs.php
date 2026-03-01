@@ -1,261 +1,161 @@
 <?php
-######################################################################
-# Edocs! - Embed Documents         	          	          	         #
-# Copyright (C) 2012 by MediaEventi  	   	   	   	   	   	   	   	 #
-# Homepage   : http://mediaeventi.it/en/projects/joomla/edocs		 #
-# Author     : Giuseppe Gallo	    	   	   	   	   	   	   	   	 #
-# Email      : webmaster@mediaeventi.it	   	   	   	   	   	   	     #
-# Version    : 1.2                       	   	    	   	   		 #
-# License    : http://www.gnu.org/copyleft/gpl.html GNU/GPL          #
-######################################################################
 
-// no direct access
-defined('_JEXEC') or die();
- 
-jimport('joomla.plugin.plugin');
- 
-class plgContentMe_Edocs extends JPlugin {
+defined('_JEXEC') or die;
 
-	// MediaEventi reference parameters
-	var $plugin_name				= "me_edocs";
-	var $plugin_short_name			= "edocs";
-	var $plugin_copyrights_start		= "\n\n<!-- MediaEventi \"Edocs!\" Plugin (v1.2) starts here -->\n";
-	var $plugin_copyrights_end			= "\n<!-- MediaEventi \"Edocs\" Plugin (v1.2) ends here -->\n\n";
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Uri\Uri;
 
-	function __construct( &$subject, $params ) {
-		parent::__construct( $subject, $params );
-	}
-	
-	function plgContentMe_Edocs( &$subject, $params ) {
-		$this->__construct( $subject, $params );
-	}
-	
-	// Joomla! 1.5
-	public function onPrepareContent(&$row, &$params, $page = 0) {
-		$this->renderMe_Edocs($row, $params, $page = 0);
-	}
- 
-	// Joomla! 1.6/1.7/2.5
-	public function onContentPrepare($context, &$row, &$params, $page = 0) {
-		jimport( 'joomla.html.parameter' );
-		$this->renderMe_Edocs($row, $params, $page);
-	}
- 
+class plgContentMe_Edocs extends CMSPlugin
+{
+    protected $autoloadLanguage = true;
 
-	
-	function renderMe_Edocs(&$row, &$params, $page = 0) {
-		/* 
-		if(version_compare(JVERSION,'1.6.0','ge')) {
-			$pluginLivePath = JURI::root(true).'/plugins/content/'.$this->plugin_name.'/'.$this->plugin_name;
-		} else {
-			$pluginLivePath = JURI::root(true).'/plugins/content/'.$this->plugin_name;
-		}
-		 */ 
-		
-		// Check if plugin is enabled
-		if(JPluginHelper::isEnabled('content', $this->plugin_name) == false) 
-			return;
+    public function onContentPrepare($context, &$item, &$params, $page = 0)
+    {
+        if ($context === 'com_finder.indexer') {
+            return true;
+        }
 
-		// Check if plugin is required into article text
-		if(preg_match("#{(" . $this->plugin_short_name . ")}#s", $row->text) == false) 
-			return;
-		
-		// Outside Parameters
-		if(!$params) $params = new JParameter(null);
-		$plugin = JPluginHelper::getPlugin('content',$this->plugin_name);
-		$pluginParams = new JParameter( $plugin->params );
-		// var_dump($pluginParams);
-				
-		// Plugin parameters
-		$ie_compatibility = $pluginParams->get( 'ie_compatibility', '' );
-		$ie_text = $pluginParams->get( 'ie_text', '' );
-		$download_text = $pluginParams->get( 'download_text', 'Download' );
-		$debug = $pluginParams->get( 'debug', 0 );
-		$root = $pluginParams->get( 'root', '' );
-		$predefined_width = $pluginParams->get( 'width', '500' );
-		$predefined_height = $pluginParams->get( 'height', '400' );
-		
-		if ($root[0] == '/')
-			$root = substr($root, 1);
-		if (substr($root, -1) == '/')
-			$root = substr($root, 0, -1);
-			
-		// Initiating some useful variables
-		$isOutside = true;
-		$isLocalhost = false;
-		$notAvailable = false;
-		$docpath = "";
-		
-		$LiveSite = JURI::base();
-		
-		
-		// expression to search for
-		$regex = "#{" . $this->plugin_short_name . "}(.*?){/" . $this->plugin_short_name . "}#s";
-		preg_match_all($regex, $row->text, $istances, PREG_SET_ORDER);
-		// var_dump($istances);
-		
-		foreach($istances AS $eDocument) {
-			
-			$matches[0] = $eDocument[0];
-			$matches[1] = $eDocument[1];
-			
-			// Separating arguments and preparing various parameters
-			if(strpos($matches[1], "=")) {
-				$values = str_replace(",", "&", str_replace(array('nbsp;', ' ', '&amp;'), '', htmlspecialchars($matches[1])));
-				parse_str($values);
-				$version = 1;
-			}
-			
-			// Support old version
-			else {
-				$arguments = explode(',',$matches[1]);
-				$path = $arguments[0];
-				$width = @$arguments[1];
-				$height = @$arguments[2];
-				$download = @$arguments[3];
-				$div_id = @$arguments[4];
-				$version = 0;
-			}
-			
-			if($version == 1 && !isset($path)) {
-				print '<div style="width: 100%; padding: 10px; color: red; border: solid 1px red;">Edocs warning: syntax is wrong. - You missed the "path" parameter<br />Please read the documentation. </div>';
-			}
-			
-			
-			/** PREPARING VARIABLES **/
-			
-			// Path
-			if(!stristr($path,"http")) {
-				if(!($path[0] == '/')) {
-					$docpath = $root . "/" . $path;
-					$path = $LiveSite . $root . '/' . $path;
-				}
-				else {
-					$path = substr($path, 1);  
-					$docpath = $path;
-					$path = $LiveSite. $path;
-				}
-				
-				$isOutside = false;
-			}
+        $textRef = null;
 
-			// Width
-			if(!$width)
-				$width = $predefined_width;	
-			if(!strpos($width, "px")) {
-				if(!strpos($width, "%"))
-					$width = $width . "px";
-			}
+        if (is_object($item) && property_exists($item, 'text')) {
+            $textRef = &$item->text;
+        } elseif (is_string($item)) {
+            $textRef = &$item;
+        } else {
+            return true;
+        }
 
-			// Height
-			if(!$height)
-				$height = $predefined_height;
-			if(!strpos($height, "px")) {
-				if(!strpos($height, "%"))
-					$height = $height . "px";
-			}
-			
-			// Id
-			if(@$div_id)
-				@$div_id = 'id="' . @$div_id . '"';
-			
-			// Class
-			if(!@$div_class)
-				@$div_class = "";
-			
-			// Download link
-			if(@$download) {
-				if(@$download != "link") {
-					$pattern = "/download\s*=\s*(.*)\s*(,|{)/iU";
-					preg_match($pattern, $matches[0], $risultati);
-					@$download_link = '<a href="' . $path . '" target="_blank" class="edocs_link"><span class="edocs_link_text">' . $risultati[1] . '</span></a>';
-				}
-				else {
-					if(@$download_text == "")
-						@$download_text = "Download";
-					@$download_link = '<a href="' . $path . '" target="_blank" class="edocs_link"><span class="edocs_link_text">' . $download_text . '</span></a>';
-				}
-			}
-			else $download_link = "";
-			
-			// Code to display the embedded document
-			if($ie_compatibility && ($this->ae_detect_ie())) {
-				// $linkname = ucfirst(str_replace("_", " ", ShowFileExtension($path)));
-				$info = pathinfo($path);
-				$linkname =  ucfirst(str_replace("_", " ", basename($path,'.'.$info['extension']))) ;
+        if (!is_string($textRef) || stripos($textRef, '{edocs}') === false) {
+            return true;
+        }
 
-				$code = '<div class="edocs_viewer ' . $div_class . '"><a href="https://docs.google.com/viewer?url=' . $path . '" target="_blank" onclick="NewWindow(this.href,\'mywin\',\''. $width . '\',\'' 
-							. $height . '\',\'no\',\'center\');return false" onfocus="this.blur()">' . $linkname . ' (' . $info['extension'] . 
-							') <br /><span style="font-size: 90%">' . $ie_text .'</span></a></div>';
-			
-			}
-			else 		
-				$code = '	<div class="edocs_viewer ' . @$div_class . '" '. @$div_id .'>
-								<iframe 
-									src="https://docs.google.com/gview?url=' . $path . '&embedded=true" 
-									style="width:' . $width . '; height:' . $height . ';" frameborder="0" class="edocs_iframe">
-								</iframe>
-								<br /><br />
-								' . $download_link . '
-							</div>';
+        $root = trim((string) $this->params->get('root', 'images/stories'), "/ \\t\\n\\r\\0\\x0B");
+        $defaultWidth = (string) $this->params->get('width', '800');
+        $defaultHeight = (string) $this->params->get('height', '1200');
+        $downloadText = (string) $this->params->get('download_text', 'Download');
 
+        $textRef = preg_replace_callback(
+            '/\{edocs\}(.*?)\{\/edocs\}/is',
+            function ($match) use ($root, $defaultWidth, $defaultHeight, $downloadText) {
+                $parsed = $this->parseTagPayload((string) $match[1]);
 
-			
-			//Debug mode on: print on screen the url of the document
-			if($debug) {
-			
-				$debug_code =  '<br /><br />
-							<div style="background-color:#666666; border:1px solid black; color:white; padding:10px;">
-							<span style="font-size: 16px; font-weight: bold;">Debug box - Plugin Edocs</span><br /><br />';
+                if (empty($parsed['path'])) {
+                    return '';
+                }
 
-				if($isLocalhost)
-					$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">WARNING!</span><br />
-									<div style="font-size: 14px; font-weight: bold; color: red; background-color: orange; padding: 5px;">Please pay attention: you are working on your local computer. Google documents viewer is not able to read your local documents, so if the document you embedded resides on your local computer,
-									you may expect to view an empty image instead of your document while working on your computer. <br />To test if the plugin is working for you, try to upload your document online and write the path to your online document. If it works, 
-									then the plugin is working fine and you just need to check your path or other parameters</div><br />';					
-							
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Code that you wrote to call the plugin</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;">{edocs}' . $matches[1] . '{/edocs}</div><br />';
-				
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Document path you entered</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;"><a href="' . $path . '" target="_blank">' . $path . '</a></div><br />';
-					
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Width</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;">' . $width . '</div><br />';
-				
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Height</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;">' . $height . '</div><br />';
-							
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Download link</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;">' . (@$download != "" ? @$download : '<span style="color: red;">download link not inserted</span>'). '</div><br />';
-				
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Id</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;">' . (@$div_id != "" ? @$div_id : '<span style="color: red;">div id not inserted</span>') . '</div><br />';
-							
-				$debug_code .=  '<span style="font-size: 12px; color: #cccccc; font-weight: bold;">Class</span><br />
-							<div style="font-size: 14px; font-weight: bold; color: black; background-color: orange; padding: 5px;">' . (@$div_class != "" ? @$div_class : '<span style="color: red;">div class not inserted</span>') . '</div><br />';
-				
-				$debug_code .=  '</div>';		
-				
-				$code .= $debug_code;
-			}
+                $path = $this->buildDocumentUrl($parsed['path'], $root);
 
-			$result = $this->plugin_copyrights_start . $code . $this->plugin_copyrights_end;
-		
-			// Perform the replacement
-			$row->text = preg_replace("#" . $matches[0] . "#s", $result , $row->text);
-			
-		} // End foreach
-	} // End function renderMe_Edocs
-	
-	private function ae_detect_ie() {
-		if (isset($_SERVER['HTTP_USER_AGENT']) && 
-		(strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false))
-			return true;
-		else
-			return false;
-	}
+                $width = $this->normalizeSize($parsed['width'] ?? $defaultWidth, $defaultWidth);
+                $height = $this->normalizeSize($parsed['height'] ?? $defaultHeight, $defaultHeight);
+
+                $divClass = isset($parsed['div_class']) && $parsed['div_class'] !== ''
+                    ? ' ' . htmlspecialchars((string) $parsed['div_class'], ENT_QUOTES, 'UTF-8')
+                    : '';
+
+                $divId = isset($parsed['div_id']) && $parsed['div_id'] !== ''
+                    ? ' id="' . htmlspecialchars((string) $parsed['div_id'], ENT_QUOTES, 'UTF-8') . '"'
+                    : '';
+
+                $safePath = htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
+                $viewerSrc = 'https://docs.google.com/gview?url=' . rawurlencode($path) . '&embedded=true';
+
+                $downloadLink = '';
+                if (!empty($parsed['download']) && (string) $parsed['download'] !== '0') {
+                    $label = (string) $parsed['download'] === 'link'
+                        ? $downloadText
+                        : (string) $parsed['download'];
+                    $downloadLink = '<br /><br /><a href="' . $safePath . '" target="_blank" rel="noopener" class="edocs_link"><span class="edocs_link_text">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span></a>';
+                }
+
+                return '<div class="edocs_viewer' . $divClass . '"' . $divId . '><iframe src="' . htmlspecialchars($viewerSrc, ENT_QUOTES, 'UTF-8') . '" style="width:' . htmlspecialchars($width, ENT_QUOTES, 'UTF-8') . '; height:' . htmlspecialchars($height, ENT_QUOTES, 'UTF-8') . ';" frameborder="0" class="edocs_iframe"></iframe>' . $downloadLink . '</div>';
+            },
+            $textRef
+        );
+
+        return true;
+    }
+
+    private function parseTagPayload(string $payload): array
+    {
+        $payload = trim($payload);
+
+        if ($payload === '') {
+            return [];
+        }
+
+        if (strpos($payload, '=') !== false) {
+            $result = [];
+            $pairs = preg_split('/\s*,\s*/', $payload);
+
+            foreach ($pairs as $pair) {
+                if ($pair === '' || strpos($pair, '=') === false) {
+                    continue;
+                }
+
+                [$key, $value] = explode('=', $pair, 2);
+                $key = trim($key);
+                $value = trim($value);
+
+                if ($key !== '') {
+                    $result[$key] = $value;
+                }
+            }
+
+            return $result;
+        }
+
+        $parts = array_map('trim', explode(',', $payload));
+
+        return [
+            'path' => $parts[0] ?? '',
+            'width' => $parts[1] ?? '',
+            'height' => $parts[2] ?? '',
+            'download' => $parts[3] ?? '',
+            'div_id' => $parts[4] ?? '',
+        ];
+    }
+
+    private function buildDocumentUrl(string $path, string $root): string
+    {
+        $path = trim($path);
+
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+
+        $base = rtrim(Uri::root(), '/');
+
+        if (strpos($path, '/') === 0) {
+            return $base . '/' . ltrim($path, '/');
+        }
+
+        if ($root !== '') {
+            return $base . '/' . trim($root, '/') . '/' . ltrim($path, '/');
+        }
+
+        return $base . '/' . ltrim($path, '/');
+    }
+
+    private function normalizeSize(?string $value, string $fallback): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            $value = trim($fallback);
+        }
+
+        if ($value === '') {
+            return '800px';
+        }
+
+        if (preg_match('/\d(px|%)$/i', $value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return $value . 'px';
+        }
+
+        return $fallback !== '' ? $fallback : '800px';
+    }
 }
-
-
-
