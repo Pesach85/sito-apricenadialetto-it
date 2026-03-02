@@ -349,6 +349,20 @@ body.itemid-559 .com-content-article__body h3 strong {
     max-width: 100%;
 }
 
+.container-component iframe[src*=".pdf"],
+.container-component iframe[src*="pdf"],
+.container-component object[data*=".pdf"],
+.container-component object[type="application/pdf"],
+.container-component embed[src*=".pdf"],
+.container-component embed[type="application/pdf"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 420px;
+    height: clamp(420px, 72vh, 980px);
+    box-sizing: border-box;
+    display: block;
+}
+
 .cookie-consent {
     position: fixed;
     left: 12px;
@@ -436,37 +450,117 @@ body.itemid-559 .com-content-article__body h3 strong {
     }
 
     .container-header .container-nav {
-        padding: 6px 0 8px;
+        padding: 6px 10px 10px;
         overflow: visible;
+        display: block;
+    }
+
+    .container-header .container-nav-toggle {
+        align-items: center;
+        background: rgba(0, 0, 0, .22);
+        border: 1px solid rgba(255, 255, 255, .32);
+        border-radius: 999px;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 700;
+        gap: 8px;
+        letter-spacing: .03em;
+        min-height: 40px;
+        padding: 0 14px;
+        text-transform: uppercase;
+    }
+
+    .container-header .container-nav-toggle .menu-icon {
+        font-size: 17px;
+        line-height: 1;
+        transition: transform .2s ease;
+    }
+
+    .container-header .container-nav.is-open .container-nav-toggle .menu-icon {
+        transform: rotate(90deg);
     }
 
     .container-header .mod-menu {
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        margin-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, .2);
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: max-height .28s ease, opacity .2s ease, transform .2s ease;
+        padding-bottom: 0;
+    }
+
+    .container-header .container-nav.is-open .mod-menu {
         display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x proximity;
-        scrollbar-width: thin;
-        padding-bottom: 2px;
+        max-height: 80vh;
+        opacity: 1;
+        transform: translateY(0);
+        overflow-y: auto;
     }
 
     .container-header .mod-menu > li {
-        height: 46px;
-        padding: 0 12px;
+        height: auto;
+        padding: 0;
         border-left: 0;
-        flex: 0 0 auto;
-        scroll-snap-align: start;
+        display: block;
+        position: relative;
     }
 
     .container-header .mod-menu > li > a,
     .container-header .mod-menu > li > span {
+        display: block;
         font-size: 13px;
-        line-height: 46px;
+        line-height: 1.35;
+        padding: 12px 44px 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    .container-header .mod-menu .submenu-toggle {
+        background: transparent;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        min-height: 42px;
+        min-width: 42px;
+        padding: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .container-header .mod-menu .submenu-toggle span {
+        display: inline-block;
+        transition: transform .2s ease;
+    }
+
+    .container-header .mod-menu > li.mobile-open > .submenu-toggle span {
+        transform: rotate(180deg);
+    }
+
+    .container-header .mod-menu > li > ul,
+    .container-header .mod-menu > li > .mod-menu__sub {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height .25s ease, opacity .2s ease;
+    }
+
+    .container-header .mod-menu > li.mobile-open > ul,
+    .container-header .mod-menu > li.mobile-open > .mod-menu__sub {
+        max-height: 1000px;
+        opacity: 1;
     }
 
     .container-header .container-search {
-        margin: 6px 0 0;
+        margin: 8px 0 0;
         width: 100%;
     }
 

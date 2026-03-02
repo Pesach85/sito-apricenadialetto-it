@@ -268,6 +268,162 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
     </div>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var navContainer = document.querySelector('.container-header .container-nav');
+        var menu = navContainer ? navContainer.querySelector('.mod-menu') : null;
+
+        if (navContainer && menu) {
+            var mobileLimit = 991.98;
+            var button = navContainer.querySelector('.container-nav-toggle');
+
+            if (!button) {
+                button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'container-nav-toggle';
+                button.setAttribute('aria-controls', 'site-main-menu');
+                button.setAttribute('aria-expanded', 'false');
+                button.setAttribute('aria-label', 'Apri menu principale');
+                button.innerHTML = '<span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span>';
+
+                if (!menu.id) {
+                    menu.id = 'site-main-menu';
+                }
+
+                navContainer.insertBefore(button, menu);
+            }
+
+            var isMobile = function () {
+                return window.innerWidth <= mobileLimit;
+            };
+
+            var openMenu = function () {
+                navContainer.classList.add('is-open');
+                button.setAttribute('aria-expanded', 'true');
+            };
+
+            var closeMenu = function () {
+                navContainer.classList.remove('is-open');
+                button.setAttribute('aria-expanded', 'false');
+                var opened = menu.querySelectorAll('li.mobile-open');
+                for (var i = 0; i < opened.length; i++) {
+                    opened[i].classList.remove('mobile-open');
+                }
+            };
+
+            button.addEventListener('click', function () {
+                if (!isMobile()) {
+                    return;
+                }
+
+                if (navContainer.classList.contains('is-open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            var items = menu.querySelectorAll('li');
+            for (var index = 0; index < items.length; index++) {
+                var item = items[index];
+                var sub = null;
+                var children = item.children;
+                for (var childIndex = 0; childIndex < children.length; childIndex++) {
+                    var child = children[childIndex];
+                    var tag = child.tagName ? child.tagName.toLowerCase() : '';
+                    if (tag === 'ul' || (child.classList && child.classList.contains('mod-menu__sub'))) {
+                        sub = child;
+                        break;
+                    }
+                }
+                if (!sub) {
+                    continue;
+                }
+
+                var hasToggle = false;
+                for (var toggleIndex = 0; toggleIndex < children.length; toggleIndex++) {
+                    if (children[toggleIndex].classList && children[toggleIndex].classList.contains('submenu-toggle')) {
+                        hasToggle = true;
+                        break;
+                    }
+                }
+
+                if (!hasToggle) {
+                    var toggle = document.createElement('button');
+                    toggle.type = 'button';
+                    toggle.className = 'submenu-toggle';
+                    toggle.setAttribute('aria-label', 'Apri sottomenu');
+                    toggle.innerHTML = '<span aria-hidden="true">▾</span>';
+                    item.insertBefore(toggle, sub);
+                }
+            }
+
+            menu.addEventListener('click', function (event) {
+                if (!isMobile()) {
+                    return;
+                }
+
+                var target = event.target;
+                while (target && target !== menu && (!target.classList || !target.classList.contains('submenu-toggle'))) {
+                    target = target.parentNode;
+                }
+
+                if (!target || target === menu) {
+                    return;
+                }
+
+                event.preventDefault();
+                var parent = target.parentNode;
+                if (!parent || parent.tagName.toLowerCase() !== 'li') {
+                    return;
+                }
+
+                if (parent.classList.contains('mobile-open')) {
+                    parent.classList.remove('mobile-open');
+                } else {
+                    var siblings = parent.parentNode ? parent.parentNode.children : [];
+                    for (var s = 0; s < siblings.length; s++) {
+                        var sibling = siblings[s];
+                        if (sibling !== parent && sibling.classList && sibling.classList.contains('mobile-open')) {
+                            sibling.classList.remove('mobile-open');
+                        }
+                    }
+                    parent.classList.add('mobile-open');
+                }
+            });
+
+            window.addEventListener('resize', function () {
+                if (!isMobile()) {
+                    closeMenu();
+                }
+            });
+        }
+
+        var resizePdfEmbeds = function () {
+            var selectors = [
+                '.container-component iframe[src*=".pdf"]',
+                '.container-component iframe[src*="pdf"]',
+                '.container-component object[data*=".pdf"]',
+                '.container-component object[type="application/pdf"]',
+                '.container-component embed[src*=".pdf"]',
+                '.container-component embed[type="application/pdf"]'
+            ];
+            var nodes = document.querySelectorAll(selectors.join(','));
+
+            for (var nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+                var node = nodes[nodeIndex];
+                node.style.width = '100%';
+                node.style.maxWidth = '100%';
+                node.style.boxSizing = 'border-box';
+                node.removeAttribute('width');
+                var height = Math.max(420, Math.min(window.innerHeight * 0.78, window.innerWidth * 1.35));
+                node.style.height = Math.round(height) + 'px';
+            }
+        };
+
+        resizePdfEmbeds();
+        window.addEventListener('resize', resizePdfEmbeds);
+    });
+
     (function () {
         var STORAGE_KEY = 'apricena_cookie_consent_v1';
         var banner = document.getElementById('cookie-consent');
