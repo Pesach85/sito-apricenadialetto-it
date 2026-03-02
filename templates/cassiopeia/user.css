@@ -203,6 +203,10 @@ body {
     text-decoration: none;
 }
 
+.container-header .container-nav-toggle {
+    display: none;
+}
+
 .container-header .container-search::before {
     content: "Cerca";
     color: #fff;
