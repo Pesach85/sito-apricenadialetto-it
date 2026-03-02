@@ -213,29 +213,101 @@ select:focus {
   }
 
   #ja-menu-button {
-    background: #222;
+    align-items: center;
+    background: rgba(0, 0, 0, .3);
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 999px;
     color: #fff;
     cursor: pointer;
-    display: block !important;
+    display: inline-flex !important;
     float: none;
     font-size: 14px;
     font-weight: 700;
+    gap: 8px;
     letter-spacing: .04em;
     line-height: 1.2;
-    padding: 12px 14px;
+    min-height: 42px;
+    padding: 0 14px;
     pointer-events: auto;
     position: relative;
     text-transform: uppercase;
+    transition: background .25s ease, border-color .25s ease;
     z-index: 1003;
   }
 
+  #ja-menu-button:hover,
+  #ja-menu-button:focus-visible {
+    background: rgba(0, 0, 0, .45);
+    border-color: rgba(255, 255, 255, .55);
+    outline: none;
+  }
+
+  #ja-menu-button .menu-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  #ja-mainnav.mobile-nav-ready.rjd-active #ja-menu-button .menu-icon {
+    transform: rotate(90deg);
+    transition: transform .22s ease;
+  }
+
   #ja-mainnav.rjd-active .ja-megamenu {
-    display: block !important;
+    max-height: 78vh;
+    opacity: 1;
+    overflow-y: auto;
+    transform: translateY(0);
   }
 
   #ja-mainnav .ja-megamenu {
+    display: block;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
     position: relative;
+    transform: translateY(-6px);
+    transition: max-height .28s ease, opacity .2s ease, transform .2s ease;
     z-index: 1002;
+  }
+
+  #ja-mainnav .ja-megamenu li.haschild {
+    position: relative;
+  }
+
+  #ja-mainnav .ja-megamenu .submenu-toggle {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    min-height: 42px;
+    min-width: 42px;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  #ja-mainnav .ja-megamenu li.haschild .submenu-toggle span {
+    display: inline-block;
+    transition: transform .2s ease;
+  }
+
+  #ja-mainnav .ja-megamenu li.haschild.mobile-open > .submenu-toggle span {
+    transform: rotate(180deg);
+  }
+
+  #ja-mainnav .ja-megamenu li.haschild > .childcontent {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height .25s ease, opacity .2s ease;
+  }
+
+  #ja-mainnav .ja-megamenu li.haschild.mobile-open > .childcontent {
+    max-height: 1200px;
+    opacity: 1;
   }
 
   h1.logo,
@@ -470,9 +542,13 @@ select:focus {
   }
 
   .com_content iframe[src*=".pdf"],
+  .com_content iframe[src*="pdf"],
   .com_content object[data*=".pdf"],
-  .com_content embed[src*=".pdf"] {
-    min-height: 72vh;
+  .com_content object[type="application/pdf"],
+  .com_content embed[src*=".pdf"],
+  .com_content embed[type="application/pdf"] {
+    height: clamp(420px, 72vh, 980px);
+    min-height: 420px;
   }
 
   #ja-social ul {

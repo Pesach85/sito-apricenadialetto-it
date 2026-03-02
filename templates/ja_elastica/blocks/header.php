@@ -103,40 +103,150 @@ $sloganText = JText::_(trim($this->getParam('sloganText'))); ?>
 document.addEventListener('DOMContentLoaded', function () {
 	var mainNav = document.getElementById('ja-mainnav');
 	var megaMenu = document.getElementById('ja-megamenu');
-	if (!mainNav || !megaMenu) {
-		return;
-	}
 
-	var menuButton = document.getElementById('ja-menu-button');
-	if (!menuButton) {
-		menuButton = document.createElement('div');
-		menuButton.id = 'ja-menu-button';
-		menuButton.textContent = 'Menu';
-		megaMenu.parentNode.insertBefore(menuButton, megaMenu);
-	}
+	if (mainNav && megaMenu) {
+		var menuButton = document.getElementById('ja-menu-button');
+		if (!menuButton) {
+			menuButton = document.createElement('button');
+			menuButton.id = 'ja-menu-button';
+			menuButton.type = 'button';
+			menuButton.innerHTML = '<span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span>';
+			megaMenu.parentNode.insertBefore(menuButton, megaMenu);
+		} else {
+			menuButton.innerHTML = '<span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span>';
+		}
 
-	if (!menuButton.hasAttribute('tabindex')) {
-		menuButton.setAttribute('tabindex', '0');
-	}
-	menuButton.setAttribute('role', 'button');
-	menuButton.setAttribute('aria-label', 'Apri menu');
+		menuButton.setAttribute('aria-label', 'Apri menu principale');
+		menuButton.setAttribute('aria-expanded', 'false');
+		menuButton.setAttribute('aria-controls', 'ja-megamenu');
+		mainNav.classList.add('mobile-nav-ready');
 
-	var toggleMenu = function (event) {
-		if (event) {
+		var mobileMode = function () {
+			return window.innerWidth <= 767;
+		};
+
+		var closeAllSubmenus = function () {
+			var items = megaMenu.querySelectorAll('li.haschild.mobile-open');
+			for (var index = 0; index < items.length; index++) {
+				items[index].classList.remove('mobile-open');
+			}
+		};
+
+		var openMenu = function () {
+			mainNav.classList.add('rjd-active');
+			menuButton.setAttribute('aria-expanded', 'true');
+		};
+
+		var closeMenu = function () {
+			mainNav.classList.remove('rjd-active');
+			menuButton.setAttribute('aria-expanded', 'false');
+			closeAllSubmenus();
+		};
+
+		menuButton.addEventListener('click', function (event) {
+			if (!mobileMode()) {
+				return;
+			}
 			event.preventDefault();
+			if (mainNav.classList.contains('rjd-active')) {
+				closeMenu();
+			} else {
+				openMenu();
+			}
+		});
+
+		menuButton.addEventListener('keydown', function (event) {
+			if ((event.key === 'Enter' || event.key === ' ') && mobileMode()) {
+				event.preventDefault();
+				menuButton.click();
+			}
+		});
+
+		var parents = megaMenu.querySelectorAll('li.haschild');
+		for (var i = 0; i < parents.length; i++) {
+			var item = parents[i];
+			var link = item.querySelector('a');
+			if (!link) {
+				continue;
+			}
+
+			if (!item.querySelector('.submenu-toggle')) {
+				var toggle = document.createElement('button');
+				toggle.type = 'button';
+				toggle.className = 'submenu-toggle';
+				toggle.setAttribute('aria-label', 'Apri sottomenu');
+				toggle.innerHTML = '<span aria-hidden="true">▾</span>';
+				link.parentNode.insertBefore(toggle, link.nextSibling);
+			}
 		}
-		if (window.innerWidth > 767) {
-			return;
+
+		megaMenu.addEventListener('click', function (event) {
+			if (!mobileMode()) {
+				return;
+			}
+
+			var target = event.target;
+			while (target && target !== megaMenu && !target.classList.contains('submenu-toggle')) {
+				target = target.parentNode;
+			}
+
+			if (!target || target === megaMenu || !target.classList.contains('submenu-toggle')) {
+				return;
+			}
+
+			event.preventDefault();
+			var parent = target;
+			while (parent && parent !== megaMenu && (!parent.classList || !parent.classList.contains('haschild') || parent.tagName.toLowerCase() !== 'li')) {
+				parent = parent.parentNode;
+			}
+			if (!parent) {
+				return;
+			}
+
+			if (parent.classList.contains('mobile-open')) {
+				parent.classList.remove('mobile-open');
+			} else {
+				var siblings = parent.parentNode ? parent.parentNode.children : [];
+				for (var j = 0; j < siblings.length; j++) {
+					var sibling = siblings[j];
+					if (sibling !== parent && sibling.classList && sibling.classList.contains('haschild') && sibling.classList.contains('mobile-open')) {
+						sibling.classList.remove('mobile-open');
+					}
+				}
+				parent.classList.add('mobile-open');
+			}
+		});
+
+		window.addEventListener('resize', function () {
+			if (!mobileMode()) {
+				closeMenu();
+			}
+		});
+	}
+
+	var resizePdfEmbeds = function () {
+		var selectors = [
+			'iframe[src*=".pdf"]',
+			'iframe[src*="pdf"]',
+			'object[data*=".pdf"]',
+			'object[type="application/pdf"]',
+			'embed[src*=".pdf"]',
+			'embed[type="application/pdf"]'
+		];
+		var nodes = document.querySelectorAll(selectors.join(','));
+		for (var k = 0; k < nodes.length; k++) {
+			var node = nodes[k];
+			node.style.width = '100%';
+			node.style.maxWidth = '100%';
+			node.style.boxSizing = 'border-box';
+			node.removeAttribute('width');
+			var height = Math.max(420, Math.min(window.innerHeight * 0.78, window.innerWidth * 1.35));
+			node.style.height = Math.round(height) + 'px';
 		}
-		mainNav.classList.toggle('rjd-active');
 	};
 
-	menuButton.addEventListener('click', toggleMenu);
-	menuButton.addEventListener('keydown', function (event) {
-		if (event.key === 'Enter' || event.key === ' ') {
-			toggleMenu(event);
-		}
-	});
+	resizePdfEmbeds();
+	window.addEventListener('resize', resizePdfEmbeds);
 });
 </script>
 
