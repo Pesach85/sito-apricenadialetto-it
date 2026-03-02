@@ -39,6 +39,12 @@ $sloganText = JText::_(trim($this->getParam('sloganText'))); ?>
 
 <?php if($this->countModules('search') || $this->countModules('social')) : ?>
 <div id="ja-top" class="clearfix">
+	<?php if($this->countModules('social')) : ?>
+	<div id="ja-social">
+		<jdoc:include type="modules" name="social" />
+	</div>
+	<?php endif; ?>
+
 	<?php if($this->countModules('search')) : ?>
 	<div id="ja-search">
 		<span class="search-btn" tabindex="0" role="button" aria-label="Apri ricerca">Search</span>
@@ -90,13 +96,49 @@ $sloganText = JText::_(trim($this->getParam('sloganText'))); ?>
 		}
 	</script>
 	<?php endif; ?>
-	<?php if($this->countModules('social')) : ?>
-	<div id="ja-social">
-		<jdoc:include type="modules" name="social" />
-	</div>
-	<?php endif; ?>
 </div>
 <?php endif;?>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+	var mainNav = document.getElementById('ja-mainnav');
+	var megaMenu = document.getElementById('ja-megamenu');
+	if (!mainNav || !megaMenu) {
+		return;
+	}
+
+	var menuButton = document.getElementById('ja-menu-button');
+	if (!menuButton) {
+		menuButton = document.createElement('div');
+		menuButton.id = 'ja-menu-button';
+		menuButton.textContent = 'Menu';
+		megaMenu.parentNode.insertBefore(menuButton, megaMenu);
+	}
+
+	if (!menuButton.hasAttribute('tabindex')) {
+		menuButton.setAttribute('tabindex', '0');
+	}
+	menuButton.setAttribute('role', 'button');
+	menuButton.setAttribute('aria-label', 'Apri menu');
+
+	var toggleMenu = function (event) {
+		if (event) {
+			event.preventDefault();
+		}
+		if (window.innerWidth > 767) {
+			return;
+		}
+		mainNav.classList.toggle('rjd-active');
+	};
+
+	menuButton.addEventListener('click', toggleMenu);
+	menuButton.addEventListener('keydown', function (event) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			toggleMenu(event);
+		}
+	});
+});
+</script>
 
 <ul class="no-display">
     <li><a href="<?php echo $this->getCurrentURL();?>#ja-content" title="<?php echo JText::_("SKIP_TO_CONTENT");?>"><?php echo JText::_("SKIP_TO_CONTENT");?></a></li>

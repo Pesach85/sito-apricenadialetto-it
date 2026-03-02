@@ -29,6 +29,7 @@ RewriteRule .* index.php [F]
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 ## Begin - Joomla! core SEF Section.
+RewriteRule ^administrator/?$ - [L]
 RewriteCond %{REQUEST_URI} !^/index\.php
 RewriteCond %{REQUEST_URI} /component/|(/[^.]*|\.(php|html?|feed|pdf|vcf|raw))$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f

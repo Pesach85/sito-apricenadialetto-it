@@ -105,6 +105,34 @@ select:focus {
   transition: background-color .2s ease, color .2s ease;
 }
 
+.com_content a[href*="_proverbi.pdf"] {
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #222;
+  display: inline-block;
+  margin: 0 .3em .5em 0;
+  padding: .5em .65em;
+  text-decoration: none;
+}
+
+.com_content a[href*="_proverbi.pdf"]:hover,
+.com_content a[href*="_proverbi.pdf"]:focus {
+  background: #ec534d;
+  border-color: #ec534d;
+  color: #fff;
+  text-decoration: none;
+}
+
+.com_content iframe[src*=".pdf"],
+.com_content object[data*=".pdf"],
+.com_content embed[src*=".pdf"] {
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100%;
+}
+
 #ja-search form.search {
   box-shadow: 0 8px 20px rgba(0, 0, 0, .2);
 }
@@ -179,6 +207,37 @@ select:focus {
 }
 
 @media (max-width: 767px) {
+  #ja-mainnav {
+    position: relative;
+    z-index: 1002;
+  }
+
+  #ja-menu-button {
+    background: #222;
+    color: #fff;
+    cursor: pointer;
+    display: block !important;
+    float: none;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    line-height: 1.2;
+    padding: 12px 14px;
+    pointer-events: auto;
+    position: relative;
+    text-transform: uppercase;
+    z-index: 1003;
+  }
+
+  #ja-mainnav.rjd-active .ja-megamenu {
+    display: block !important;
+  }
+
+  #ja-mainnav .ja-megamenu {
+    position: relative;
+    z-index: 1002;
+  }
+
   h1.logo,
   h1.logo a {
     width: 100% !important;
@@ -201,6 +260,7 @@ select:focus {
     margin-top: 8px;
     margin-bottom: 12px;
     overflow: visible;
+    z-index: 1001;
   }
 
   #ja-search {
@@ -399,6 +459,20 @@ select:focus {
   #ja-social {
     width: auto;
     padding-left: 4px;
+  }
+
+  .com_content a[href*="_proverbi.pdf"] {
+    box-sizing: border-box;
+    display: block;
+    margin: 0 0 .55em;
+    padding: .7em .75em;
+    width: 100%;
+  }
+
+  .com_content iframe[src*=".pdf"],
+  .com_content object[data*=".pdf"],
+  .com_content embed[src*=".pdf"] {
+    min-height: 72vh;
   }
 
   #ja-social ul {
