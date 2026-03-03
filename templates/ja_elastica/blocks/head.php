@@ -54,7 +54,9 @@ var isRTL = <?php echo $this->isRTL()?'true':'false' ?>;
 (function(w,d,s,l){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=<?php echo $googleTagManagerId; ?>'+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer');
 </script>
 <?php $GLOBALS['googleTagManagerNoScript'] = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . htmlspecialchars($googleTagManagerId, ENT_COMPAT, 'UTF-8') . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'; ?>
-<?php elseif (preg_match('/^G-[A-Z0-9]+$/', $googleAnalyticsId)): ?>
+<?php endif; ?>
+
+<?php if (preg_match('/^G-[A-Z0-9]+$/', $googleAnalyticsId)): ?>
 <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($googleAnalyticsId, ENT_COMPAT, 'UTF-8'); ?>"></script>
 <script type="text/javascript">
 window.dataLayer = window.dataLayer || [];
