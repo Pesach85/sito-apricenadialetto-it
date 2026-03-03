@@ -423,7 +423,21 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
             }
         };
 
+        var normalizeSpacerCells = function () {
+            var cells = document.querySelectorAll('.container-component td');
+
+            for (var cellIndex = 0; cellIndex < cells.length; cellIndex++) {
+                var cell = cells[cellIndex];
+                var plainText = (cell.textContent || '').replace(/\u00a0/g, '').trim();
+
+                if (plainText === '') {
+                    cell.classList.add('is-spacer-cell');
+                }
+            }
+        };
+
         resizePdfEmbeds();
+        normalizeSpacerCells();
         window.addEventListener('resize', resizePdfEmbeds);
     });
 

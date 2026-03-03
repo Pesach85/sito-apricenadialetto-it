@@ -375,12 +375,60 @@ body.itemid-559 .com-content-article__body h3 strong {
     background: #efefef;
     border: 1px solid #c8c8c8;
     border-radius: 4px;
+    display: flex;
+    justify-content: center;
     padding: 10px;
+    text-align: center;
 }
 
 .container-facebook-bottom iframe {
     width: 100% !important;
     max-width: 100%;
+}
+
+.container-facebook-bottom .itp-fblike-box {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+
+.container-facebook-bottom .fb-page-iframe {
+    border: 0;
+    width: min(100%, 340px) !important;
+    max-width: 100%;
+}
+
+.container-component .pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    text-align: center;
+}
+
+.container-component .pagination .counter {
+    width: 100%;
+    margin: 0;
+}
+
+.container-component .pagination ul,
+.container-component .pagination .pagination-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.container-component td.is-spacer-cell {
+    font-size: 0;
+    line-height: 1;
+    min-width: 0;
+    padding: 0 !important;
+    width: 1% !important;
 }
 
 .container-component iframe[src*=".pdf"],
@@ -457,6 +505,16 @@ body.itemid-559 .com-content-article__body h3 strong {
         display: block;
         min-height: 0;
         overflow: visible;
+    }
+
+    .container-component .pagination a,
+    .container-component .pagination span,
+    .container-component .pagination strong {
+        display: inline-flex;
+        justify-content: center;
+        min-height: 34px;
+        min-width: 34px;
+        padding: 4px 8px;
     }
 
     .container-header > .grid-child,

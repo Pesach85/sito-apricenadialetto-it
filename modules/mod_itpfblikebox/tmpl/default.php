@@ -13,11 +13,23 @@
 
 // no direct access
 defined( "_JEXEC" ) or die;?>
-<?php $hasMarketingConsent = isset($_COOKIE['cookie_consent_marketing']) && $_COOKIE['cookie_consent_marketing'] == '1'; ?>
 <?php $facebookPageLink = trim((string) $params->get("fbPageLink")); ?>
 <div class="itp-fblike-box<?php echo $moduleClassSfx;?>">
 <?php if (!empty($facebookPageLink)): ?>
 <?php $facebookPageHref = str_replace('http://', 'https://', $facebookPageLink); ?>
-<a class="fb-compact-link" href="<?php echo htmlspecialchars($facebookPageHref, ENT_COMPAT, 'UTF-8');?>" rel="noopener noreferrer" target="_blank">Apri la pagina Facebook</a>
+<?php $facebookPluginSrc = 'https://www.facebook.com/plugins/page.php?href=' . rawurlencode($facebookPageHref) . '&tabs=timeline&width=340&height=320&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false'; ?>
+<iframe
+	class="fb-page-iframe"
+	src="<?php echo htmlspecialchars($facebookPluginSrc, ENT_COMPAT, 'UTF-8');?>"
+	width="340"
+	height="320"
+	style="border:none;overflow:hidden"
+	scrolling="no"
+	frameborder="0"
+	allowfullscreen="true"
+	allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+	loading="lazy"
+	referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<noscript><a href="<?php echo htmlspecialchars($facebookPageHref, ENT_COMPAT, 'UTF-8');?>" rel="noopener noreferrer" target="_blank">Apri la pagina Facebook</a></noscript>
 <?php endif; ?>
 </div>

@@ -245,7 +245,19 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	};
 
+	var normalizeSpacerCells = function () {
+		var cells = document.querySelectorAll('#ja-content td, #ja-content-main td, .ja-content td');
+		for (var cellIndex = 0; cellIndex < cells.length; cellIndex++) {
+			var cell = cells[cellIndex];
+			var plainText = (cell.textContent || '').replace(/\u00a0/g, '').trim();
+			if (plainText === '') {
+				cell.classList.add('is-spacer-cell');
+			}
+		}
+	};
+
 	resizePdfEmbeds();
+	normalizeSpacerCells();
 	window.addEventListener('resize', resizePdfEmbeds);
 });
 </script>

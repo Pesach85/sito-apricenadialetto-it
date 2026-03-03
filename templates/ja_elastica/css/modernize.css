@@ -149,27 +149,64 @@ select:focus {
 }
 
 .itp-fblike-box {
+  display: flex;
+  justify-content: center;
   margin: 0;
   padding: 2px 0;
+  text-align: center;
 }
 
-.itp-fblike-box .fb-compact-link {
-  background: #ec534d;
-  border: 1px solid #ec534d;
-  border-radius: 4px;
-  color: #fff !important;
-  display: inline-block;
-  font-size: .92em;
-  line-height: 1.2;
-  padding: 7px 10px;
-  text-decoration: none;
+.itp-fblike-box .fb-page-iframe {
+  border: 0;
+  display: block;
+  max-width: 100%;
+  width: min(100%, 340px) !important;
 }
 
-.itp-fblike-box .fb-compact-link:hover,
-.itp-fblike-box .fb-compact-link:focus {
-  background: #222;
-  border-color: #222;
-  color: #fff !important;
+.blog-featured .pagination,
+#ja-content-main .pagination {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  text-align: center;
+}
+
+.blog-featured .pagination .counter,
+#ja-content-main .pagination .counter {
+  float: none;
+  margin: 0;
+  width: 100%;
+}
+
+.blog-featured .pagination ul,
+.blog-featured .pagination .pagination-list,
+#ja-content-main .pagination ul,
+#ja-content-main .pagination .pagination-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.blog-featured .pagination li,
+#ja-content-main .pagination li {
+  float: none;
+  margin: 0;
+}
+
+#ja-content-main td.is-spacer-cell,
+#ja-content td.is-spacer-cell,
+.ja-content td.is-spacer-cell {
+  font-size: 0;
+  line-height: 1;
+  min-width: 0;
+  padding: 0 !important;
+  width: 1% !important;
 }
 
 #ja-footer img[src*="web4web"],
@@ -350,9 +387,9 @@ select:focus {
     padding: 0;
   }
 
-  .itp-fblike-box .fb-compact-link {
-    font-size: .86em;
-    padding: 6px 9px;
+  .itp-fblike-box .fb-page-iframe {
+    height: 280px;
+    width: 100% !important;
   }
 
   #ja-search .search-btn {
@@ -569,5 +606,30 @@ select:focus {
 
   #ja-footer {
     font-size: .95em;
+  }
+
+  .blog-featured .pagination,
+  #ja-content-main .pagination {
+    gap: 6px;
+  }
+
+  .blog-featured .pagination ul,
+  .blog-featured .pagination .pagination-list,
+  #ja-content-main .pagination ul,
+  #ja-content-main .pagination .pagination-list {
+    gap: 4px;
+  }
+
+  .blog-featured .pagination a,
+  .blog-featured .pagination span,
+  .blog-featured .pagination strong,
+  #ja-content-main .pagination a,
+  #ja-content-main .pagination span,
+  #ja-content-main .pagination strong {
+    display: inline-flex;
+    justify-content: center;
+    min-height: 34px;
+    min-width: 34px;
+    padding: 4px 8px;
   }
 }
