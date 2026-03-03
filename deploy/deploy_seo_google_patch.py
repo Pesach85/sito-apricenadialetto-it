@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import posixpath
+import json
 import stat
 import sys
 from datetime import datetime
@@ -15,11 +16,9 @@ REMOTE_ROOT = "/home/w19158/public_html"
 KEY_PATH = r"C:\Users\Pasquale Lombardi\Documents\SITO_PAPA_DATI\.ssh\id_rsa"
 
 PASSPHRASE = os.environ.get("SFTP_PASSPHRASE", "")
-if not PASSPHRASE:
-    print("ERROR: missing SFTP_PASSPHRASE env var")
-    sys.exit(10)
 
 LOCAL_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SFTP_CONFIG_PATH = os.path.join(LOCAL_ROOT, ".vscode", "sftp.json")
 BASE_URL = "https://apricenadialetto.it"
 
 FILES_TO_UPLOAD = [
@@ -58,7 +57,48 @@ def is_remote_file(sftp: paramiko.SFTPClient, remote_path: str) -> bool:
         return False
 
 
+def load_sftp_settings() -> None:
+    global HOST, PORT, USERNAME, REMOTE_ROOT, KEY_PATH, PASSPHRASE
+
+    if not os.path.isfile(SFTP_CONFIG_PATH):
+        return
+
+    try:
+        with open(SFTP_CONFIG_PATH, "r", encoding="utf-8") as handle:
+            cfg = json.load(handle)
+    except Exception:
+        return
+
+    host = str(cfg.get("host", "")).strip()
+    username = str(cfg.get("username", "")).strip()
+    key_path = str(cfg.get("privateKeyPath", "")).strip()
+    remote_path = str(cfg.get("remotePath", "")).strip()
+    passphrase = str(cfg.get("passphrase", "")).strip()
+
+    if host:
+        HOST = host
+    if username:
+        USERNAME = username
+    if key_path:
+        KEY_PATH = key_path
+    if remote_path:
+        REMOTE_ROOT = remote_path.rstrip("/")
+    if passphrase and not PASSPHRASE:
+        PASSPHRASE = passphrase
+
+    try:
+        PORT = int(cfg.get("port", PORT))
+    except Exception:
+        pass
+
+
 def main() -> int:
+    load_sftp_settings()
+
+    if not PASSPHRASE:
+        print("ERROR: missing SFTP passphrase (env SFTP_PASSPHRASE or .vscode/sftp.json passphrase)")
+        return 10
+
     pkey = paramiko.RSAKey.from_private_key_file(KEY_PATH, password=PASSPHRASE)
 
     ssh = paramiko.SSHClient()

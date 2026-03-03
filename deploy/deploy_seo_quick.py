@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import posixpath
 import re
+import json
 import stat
 import sys
 from datetime import datetime
@@ -18,11 +19,9 @@ BASE_URL = "https://apricenadialetto.it"
 
 LOCAL_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CONFIG_PATH = os.path.join(LOCAL_ROOT, "configuration.php")
+SFTP_CONFIG_PATH = os.path.join(LOCAL_ROOT, ".vscode", "sftp.json")
 
 PASSPHRASE = os.environ.get("SFTP_PASSPHRASE", "")
-if not PASSPHRASE:
-    print("ERROR: missing SFTP_PASSPHRASE env var")
-    sys.exit(10)
 
 FILES_TO_UPLOAD = [
     "configuration.php",
@@ -46,6 +45,41 @@ def read_google_ids() -> tuple[str, str, str]:
         return (m.group(1).strip() if m else "")
 
     return extract("google_tag_manager_id"), extract("google_analytics_id"), extract("google_site_verification")
+
+
+def load_sftp_settings() -> None:
+    global HOST, PORT, USERNAME, REMOTE_ROOT, KEY_PATH, PASSPHRASE
+
+    if not os.path.isfile(SFTP_CONFIG_PATH):
+        return
+
+    try:
+        with open(SFTP_CONFIG_PATH, "r", encoding="utf-8") as handle:
+            cfg = json.load(handle)
+    except Exception:
+        return
+
+    host = str(cfg.get("host", "")).strip()
+    username = str(cfg.get("username", "")).strip()
+    key_path = str(cfg.get("privateKeyPath", "")).strip()
+    remote_path = str(cfg.get("remotePath", "")).strip()
+    passphrase = str(cfg.get("passphrase", "")).strip()
+
+    if host:
+        HOST = host
+    if username:
+        USERNAME = username
+    if key_path:
+        KEY_PATH = key_path
+    if remote_path:
+        REMOTE_ROOT = remote_path.rstrip("/")
+    if passphrase and not PASSPHRASE:
+        PASSPHRASE = passphrase
+
+    try:
+        PORT = int(cfg.get("port", PORT))
+    except Exception:
+        pass
 
 
 def ssh_exec(ssh: paramiko.SSHClient, command: str) -> tuple[int, str, str]:
@@ -74,6 +108,12 @@ def is_remote_file(sftp: paramiko.SFTPClient, remote_path: str) -> bool:
 
 
 def main() -> int:
+    load_sftp_settings()
+
+    if not PASSPHRASE:
+        print("ERROR: missing SFTP passphrase (env SFTP_PASSPHRASE or .vscode/sftp.json passphrase)")
+        return 10
+
     gtm_id, ga_id, gsv = read_google_ids()
     print(f"LOCAL_IDS gtm={gtm_id or '-'} ga={ga_id or '-'} gsv={'set' if gsv else 'not-set'}")
 

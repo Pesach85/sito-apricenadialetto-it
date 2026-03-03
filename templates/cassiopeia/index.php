@@ -144,7 +144,7 @@ $googleAnalyticsId = strtoupper(trim((string) $config->get('google_analytics_id'
 $gtmNoScript = '';
 
 if (preg_match('/^GTM-[A-Z0-9]+$/', $googleTagManagerId)) {
-    $googleHeadTags .= "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=' + i + dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" . $googleTagManagerId . "');</script>\n";
+    $googleHeadTags .= "<script>(function(w,d,s,l){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=" . $googleTagManagerId . "'+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer');</script>\n";
     $gtmNoScript = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . htmlspecialchars($googleTagManagerId, ENT_COMPAT, 'UTF-8') . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
 } elseif (preg_match('/^G-[A-Z0-9]+$/', $googleAnalyticsId)) {
     $googleHeadTags .= '<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($googleAnalyticsId, ENT_COMPAT, 'UTF-8') . '"></script>' . "\n";
