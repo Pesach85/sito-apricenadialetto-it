@@ -757,3 +757,61 @@ Impatti possibili:
 Nota di governance documento:
 
 - le sezioni precedenti che indicano cutover J4 produzione come “definitivo” sono da considerare **superate** da questa verifica forense finché il riallineamento non viene completato e validato.
+
+## 31) Riallineamento forense completato produzione (2026-03-04)
+
+Esecuzione immediata effettuata dopo la verifica forense del punto 30.
+
+### Step eseguiti
+
+1. Backup guardrail completo riuscito:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_guardrail_backup.py
+```
+
+Esito:
+
+- `BACKUP_OK`
+- `snapshot`: `20260304_003936`
+- `site_archive_sha256`: `582296ae6b0c1ecd1e8531b7feaa34038caf65fe1908e9f9ce70cca72f6badb0`
+- `db_dump_sha256`: `cfac0ab64e008b9ad2277a356d90110645c50c5f26a9c01d1b099344889aabaf`
+
+2. Overlay pulito Joomla 4.4.13 su root produzione (`public_html`):
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/overlay_production_j4.py --apply --confirm I_UNDERSTAND
+```
+
+Esito:
+
+- `J4_PRODUCTION_OVERLAY_OK`
+- `detected_version=4.4.13`
+
+3. Neutralizzazione sicura file legacy 2.5 (rinomina con backup timestamp):
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/resolve_production_hybrid_j4.py --apply --confirm I_UNDERSTAND
+```
+
+Esito:
+
+- `HYBRID_RESOLUTION_OK`
+- `legacy_file_exists: MISSING`
+- `legacy_backup_exists: FOUND`
+
+4. Verifica forense finale:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/check_remote_joomla_version.py
+```
+
+Esito oggettivo finale:
+
+- `REMOTE_JOOMLA_XML_VERSION=4.4.13`
+- `REMOTE_FILE_J4_SRC=FOUND`
+- `REMOTE_FILE_LEGACY_VERSION=MISSING`
+
+### Conclusione aggiornata
+
+Lo stato ibrido evidenziato al punto 30 è stato **risolto**: produzione è ora coerente lato file versione con stack Joomla 4.4.13.
