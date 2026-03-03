@@ -165,16 +165,16 @@ body {
 
 .container-header .container-search {
     margin-top: 0;
-    margin-left: 10px;
+    margin-left: 8px;
     white-space: nowrap;
     display: flex;
     align-items: center;
     flex: 0 0 auto;
-    padding-right: 20px !important;
+    padding-right: 16px !important;
 }
 
 .container-header .container-contact-link {
-    margin-left: 10px;
+    margin-left: 8px;
     display: flex;
     align-items: center;
     flex: 0 0 auto;
@@ -184,8 +184,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 21px;
-    padding: 0 8px;
+    min-height: 20px;
+    padding: 0 7px;
     border: 1px solid rgba(255, 255, 255, .38);
     border-radius: 4px;
     color: #fff;
@@ -211,7 +211,7 @@ body {
     content: "Cerca";
     color: #fff;
     font-size: 11px;
-    margin-right: 6px;
+    margin-right: 5px;
 }
 
 .com-content-article.item-page {
