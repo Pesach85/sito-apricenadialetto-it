@@ -37,6 +37,9 @@ defined('_JEXEC') or die;
 </head>
 
 <body id="bd" class="<?php if (!T3Common::mobile_device_detect()):?>bd<?php endif;?> <?php echo $this->getBodyClass();?>">
+<?php if (!empty($GLOBALS['googleTagManagerNoScript'])): ?>
+<?php echo $GLOBALS['googleTagManagerNoScript']; ?>
+<?php endif; ?>
 <a name="Top" id="Top"></a>
 <div id="ja-wrapper">
 

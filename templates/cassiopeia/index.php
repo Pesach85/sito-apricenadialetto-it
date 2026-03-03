@@ -20,6 +20,7 @@ use Joomla\CMS\Uri\Uri;
 $app   = Factory::getApplication();
 $input = $app->getInput();
 $wa    = $this->getWebAssetManager();
+$config = Factory::getConfig();
 
 // Browsers support SVG favicons
 $this->addHeadLink(HTMLHelper::_('image', 'joomla-favicon.svg', '', [], true, 1), 'icon', 'rel', ['type' => 'image/svg+xml']);
@@ -117,7 +118,37 @@ if ($this->countModules('sidebar-right', true)) {
 // Container
 $wrapper = $this->params->get('fluidContainer') ? 'wrapper-fluid' : 'wrapper-static';
 
+$metaDescription = trim((string) $this->getMetaData('description'));
+if ($metaDescription === '') {
+    $defaultMetaDescription = trim((string) $config->get('MetaDesc', ''));
+    if ($defaultMetaDescription !== '') {
+        $this->setMetaData('description', $defaultMetaDescription);
+    }
+}
+
+$robotsMeta = trim((string) $this->getMetaData('robots'));
+if ($robotsMeta === '') {
+    $this->setMetaData('robots', 'index, follow');
+}
+
 $this->setMetaData('viewport', 'width=device-width, initial-scale=1');
+
+$googleSiteVerification = trim((string) $config->get('google_site_verification', ''));
+if ($googleSiteVerification !== '') {
+    $this->addCustomTag('<meta name="google-site-verification" content="' . htmlspecialchars($googleSiteVerification, ENT_COMPAT, 'UTF-8') . '">');
+}
+
+$googleTagManagerId = strtoupper(trim((string) $config->get('google_tag_manager_id', '')));
+$googleAnalyticsId = strtoupper(trim((string) $config->get('google_analytics_id', '')));
+$gtmNoScript = '';
+
+if (preg_match('/^GTM-[A-Z0-9]+$/', $googleTagManagerId)) {
+    $this->addCustomTag("<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=' + i + dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" . $googleTagManagerId . "');</script>");
+    $gtmNoScript = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . htmlspecialchars($googleTagManagerId, ENT_COMPAT, 'UTF-8') . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
+} elseif (preg_match('/^G-[A-Z0-9]+$/', $googleAnalyticsId)) {
+    $this->addCustomTag('<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($googleAnalyticsId, ENT_COMPAT, 'UTF-8') . '"></script>');
+    $this->addCustomTag("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','" . $googleAnalyticsId . "');</script>");
+}
 
 $stickyHeader = $this->params->get('stickyHeader') ? 'position-sticky sticky-top' : '';
 
@@ -142,6 +173,7 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
     . $hasClass
     . ($this->direction == 'rtl' ? ' rtl' : '');
 ?>">
+    <?php echo $gtmNoScript; ?>
     <header class="header container-header full-width<?php echo $stickyHeader ? ' ' . $stickyHeader : ''; ?>">
 
         <?php if ($this->countModules('topbar')) : ?>

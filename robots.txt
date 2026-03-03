@@ -16,15 +16,17 @@ Disallow: /administrator/
 Disallow: /cache/
 Disallow: /cli/
 Disallow: /components/
-Disallow: /images/
 Disallow: /includes/
 Disallow: /installation/
 Disallow: /language/
 Disallow: /libraries/
 Disallow: /logs/
-Disallow: /media/
+Allow: /images/
+Allow: /media/
 Disallow: /modules/
 Disallow: /plugins/
-Disallow: /templates/
+Allow: /templates/
 Disallow: /tmp/
+
+Sitemap: https://apricenadialetto.it/sitemap.xml
 
