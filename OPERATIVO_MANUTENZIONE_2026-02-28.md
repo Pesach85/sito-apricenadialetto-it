@@ -720,3 +720,40 @@ Esito finale:
 Nota operativa:
 
 - i warning legacy in `error_log` possono contenere righe storiche del vecchio stack; per validazione finale usare test pagina reale frontend/backend dopo hard refresh.
+
+## 30) Verifica forense produzione (2026-03-04) — stato reale
+
+Verifica remota eseguita in read-only via SSH sui file versione core in `public_html`.
+
+Evidenze oggettive rilevate su produzione:
+
+- `administrator/manifests/files/joomla.xml` → `<version>4.4.13</version>`
+- `libraries/src/Version.php` → **presente** (file Joomla 4)
+- `libraries/cms/version/version.php` → **presente** con:
+   - `public $RELEASE = '2.5';`
+   - `public $DEV_LEVEL = '4';`
+
+Conclusione tecnica:
+
+- lo stato attuale è **ibrido/incoerente** (mix di file Joomla 4 e file legacy 2.5),
+- quindi la sola dicitura “produzione già 4.4.13” **non è affidabile** finché non si riallinea il filesystem core.
+
+Impatti possibili:
+
+- comportamento imprevedibile su bootstrap/version checks,
+- warning/deprecation intermittenti,
+- rischi su update futuri e su estensioni che leggono la versione core.
+
+### Azione correttiva immediata (obbligatoria)
+
+1. Eseguire backup guardrail completo (`upgrade_guardrail_backup.py`).
+2. Eseguire **overlay pulito** del pacchetto Joomla 4.4.13 su produzione (tutti i file core, non patch parziali).
+3. Rieseguire smoke check produzione e verifica versioning file:
+    - `administrator/manifests/files/joomla.xml`
+    - `libraries/src/Version.php`
+    - assenza/neutralizzazione del legacy `libraries/cms/version/version.php` non coerente con stack J4.
+4. Solo dopo riallineamento file, considerare lo stato “J4 in produzione” come definitivo.
+
+Nota di governance documento:
+
+- le sezioni precedenti che indicano cutover J4 produzione come “definitivo” sono da considerare **superate** da questa verifica forense finché il riallineamento non viene completato e validato.
