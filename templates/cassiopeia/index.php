@@ -210,6 +210,9 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
                 <?php if ($this->countModules('menu', true)) : ?>
                     <jdoc:include type="modules" name="menu" style="none" />
                 <?php endif; ?>
+                <div class="container-contact-link">
+                    <a href="<?php echo $this->baseurl; ?>/index.php/component/contact/contact/1-antonio-lombardi" aria-label="Contatti">Contatti</a>
+                </div>
                 <?php if ($this->countModules('search', true)) : ?>
                     <div class="container-search">
                         <jdoc:include type="modules" name="search" style="none" />
