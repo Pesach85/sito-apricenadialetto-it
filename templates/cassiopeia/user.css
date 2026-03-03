@@ -152,6 +152,15 @@ body {
     overflow: hidden;
 }
 
+.container-header .container-nav-tools {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 0;
+    gap: 8px;
+    padding-right: 16px;
+}
+
 .container-header .mod-menu {
     margin: 0;
     padding: 0;
@@ -165,16 +174,16 @@ body {
 
 .container-header .container-search {
     margin-top: 0;
-    margin-left: 8px;
+    margin-left: 0;
     white-space: nowrap;
     display: flex;
     align-items: center;
     flex: 0 0 auto;
-    padding-right: 16px !important;
+    padding-right: 0 !important;
 }
 
 .container-header .container-contact-link {
-    margin-left: 8px;
+    margin-left: 0;
     display: flex;
     align-items: center;
     flex: 0 0 auto;
@@ -545,6 +554,12 @@ body.itemid-559 .com-content-article__body h3 strong {
         padding: 6px 10px 10px;
         overflow: visible;
         display: block;
+    }
+
+    .container-header .container-nav-tools {
+        display: block;
+        min-width: 0;
+        padding-right: 0;
     }
 
     .container-header .container-nav-toggle {
