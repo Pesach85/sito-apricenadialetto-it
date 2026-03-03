@@ -134,8 +134,9 @@ if ($robotsMeta === '') {
 $this->setMetaData('viewport', 'width=device-width, initial-scale=1');
 
 $googleSiteVerification = trim((string) $config->get('google_site_verification', ''));
+$googleHeadTags = '';
 if ($googleSiteVerification !== '') {
-    $this->addCustomTag('<meta name="google-site-verification" content="' . htmlspecialchars($googleSiteVerification, ENT_COMPAT, 'UTF-8') . '">');
+    $googleHeadTags .= '<meta name="google-site-verification" content="' . htmlspecialchars($googleSiteVerification, ENT_COMPAT, 'UTF-8') . '">' . "\n";
 }
 
 $googleTagManagerId = strtoupper(trim((string) $config->get('google_tag_manager_id', '')));
@@ -143,11 +144,11 @@ $googleAnalyticsId = strtoupper(trim((string) $config->get('google_analytics_id'
 $gtmNoScript = '';
 
 if (preg_match('/^GTM-[A-Z0-9]+$/', $googleTagManagerId)) {
-    $this->addCustomTag("<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=' + i + dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" . $googleTagManagerId . "');</script>");
+    $googleHeadTags .= "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=' + i + dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" . $googleTagManagerId . "');</script>\n";
     $gtmNoScript = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . htmlspecialchars($googleTagManagerId, ENT_COMPAT, 'UTF-8') . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
 } elseif (preg_match('/^G-[A-Z0-9]+$/', $googleAnalyticsId)) {
-    $this->addCustomTag('<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($googleAnalyticsId, ENT_COMPAT, 'UTF-8') . '"></script>');
-    $this->addCustomTag("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','" . $googleAnalyticsId . "');</script>");
+    $googleHeadTags .= '<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($googleAnalyticsId, ENT_COMPAT, 'UTF-8') . '"></script>' . "\n";
+    $googleHeadTags .= "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','" . $googleAnalyticsId . "');</script>\n";
 }
 
 $stickyHeader = $this->params->get('stickyHeader') ? 'position-sticky sticky-top' : '';
@@ -158,6 +159,7 @@ $wa->getAsset('style', 'fontawesome')->setAttribute('rel', 'lazy-stylesheet');
 <!DOCTYPE html>
 <html lang="<?php echo $this->language; ?>" dir="<?php echo $this->direction; ?>">
 <head>
+    <?php echo $googleHeadTags; ?>
     <jdoc:include type="metas" />
     <jdoc:include type="styles" />
     <jdoc:include type="scripts" />
