@@ -815,3 +815,68 @@ Esito oggettivo finale:
 ### Conclusione aggiornata
 
 Lo stato ibrido evidenziato al punto 30 è stato **risolto**: produzione è ora coerente lato file versione con stack Joomla 4.4.13.
+
+## 32) Ricostruzione pagina administrator + dipendenze core (2026-03-04)
+
+Richiesta eseguita: ricostruzione backend `administrator` con dipendenze necessarie sul core nuovo.
+
+### Root cause rilevata
+
+Verifica live su `/administrator/` mostrava `HTTP 500` con messaggio:
+
+- `behavior::noframes not found.`
+
+Il backend richiedeva il metodo legacy `noframes()` nel helper core `Behavior` per compatibilità con template amministrativo legacy (`bluestork`) ancora in uso.
+
+### Intervento eseguito
+
+1. Hotfix core helper remoto:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/hotfix_remote_behavior_noframes.py
+```
+
+Esito:
+
+- `PATCH_OK /home/w19158/public_html/libraries/src/HTML/Helpers/Behavior.php`
+
+2. Verifica runtime backend:
+
+- `https://www.apricenadialetto.it/administrator/` → `HTTP/2 200`
+- pagina login amministrazione renderizzata correttamente.
+
+3. Verifica dipendenze administrator/core (script dedicato):
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/verify_production_administrator_stack.py
+```
+
+Esito:
+
+- `ADMIN_STACK_OK`
+- `administrator/index.php`: FOUND
+- `administrator/includes/app.php`: FOUND
+- `libraries/src/HTML/Helpers/Behavior.php`: FOUND
+- `behavior_noframes`: FOUND
+- `administrator_http`: `HTTP/2 200`
+- asset admin principali: `HTTP/2 200`
+- `joomla_version`: `4.4.13`
+
+Report locale:
+
+- `upgrade_backups/production_admin_stack_latest.json`
+
+4. Backup guardrail post-ripristino:
+
+```powershell
+D:/Sito_apricenadialetto.it/.venv/Scripts/python.exe deploy/upgrade_guardrail_backup.py
+```
+
+Esito:
+
+- `BACKUP_OK`
+- `snapshot`: `20260304_005359`
+
+### Stato finale
+
+Backend `administrator` ricostruito e operativo sul core Joomla 4.4.13 con dipendenze critiche validate.
