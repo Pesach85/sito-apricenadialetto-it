@@ -64,7 +64,7 @@ class JConfig {
 	public $feed_email = 'author';
 	public $cookie_domain = '';
 	public $cookie_path = '';
-	public $google_tag_manager_id = '';
-	public $google_analytics_id = '';
-	public $google_site_verification = '';
+	public $google_tag_manager_id = 'GTM-P54S38SS';
+	public $google_analytics_id = 'G-5EXNYV3MGY';
+	public $google_site_verification = 'fMr_DvMMFlXWrZ8O15LTePdqzvSVNQG_yoYEzaQ-0_A';
 }
