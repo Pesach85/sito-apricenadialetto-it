@@ -42,6 +42,10 @@ if (!class_exists('JRequest')) {
 				return 'int';
 			}
 
+			if ($type === 'base64') {
+				return 'string';
+			}
+
 			return $type;
 		}
 
@@ -52,6 +56,9 @@ if (!class_exists('JRequest')) {
 			switch ($type) {
 				case 'int':
 					return (int) $value;
+
+				case 'array':
+					return is_array($value) ? $value : (array) $value;
 
 				case 'uint':
 					return max(0, (int) $value);
@@ -101,6 +108,41 @@ if (!class_exists('JRequest')) {
 			return $default;
 		}
 
+		public static function get($hash = 'default', $mask = 0)
+		{
+			$hash = strtolower((string) $hash);
+
+			if ($hash === 'request' || $hash === 'default' || $hash === '') {
+				return $_REQUEST;
+			}
+
+			if ($hash === 'get') {
+				return $_GET;
+			}
+
+			if ($hash === 'post') {
+				return $_POST;
+			}
+
+			if ($hash === 'files') {
+				return $_FILES;
+			}
+
+			if ($hash === 'cookie') {
+				return $_COOKIE;
+			}
+
+			if ($hash === 'server') {
+				return $_SERVER;
+			}
+
+			if ($hash === 'env') {
+				return $_ENV;
+			}
+
+			return $_REQUEST;
+		}
+
 		public static function getCmd($name, $default = '')
 		{
 			return self::getVar($name, $default, 'default', 'cmd');
@@ -119,6 +161,11 @@ if (!class_exists('JRequest')) {
 		public static function getString($name, $default = '')
 		{
 			return self::getVar($name, $default, 'default', 'string');
+		}
+
+		public static function getWord($name, $default = '')
+		{
+			return self::getVar($name, $default, 'default', 'word');
 		}
 
 		public static function getMethod()
