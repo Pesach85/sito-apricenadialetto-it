@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 import sys
+import base64
+from pathlib import Path
 
 import requests
 
@@ -17,11 +19,13 @@ def extract_token(html: str) -> str:
 
 def main() -> int:
     if len(sys.argv) < 3:
-        print("Usage: verify_admin_login_http.py <username> <password>")
+        print("Usage: verify_admin_login_http.py <username> <password> [return_path]")
         return 1
 
     username = sys.argv[1]
     password = sys.argv[2]
+    return_path = sys.argv[3] if len(sys.argv) > 3 else 'index.php'
+    return_b64 = base64.b64encode(return_path.encode('utf-8')).decode('ascii')
 
     session = requests.Session()
     session.verify = True
@@ -39,13 +43,16 @@ def main() -> int:
         "passwd": password,
         "option": "com_login",
         "task": "login",
-        "return": "aW5kZXgucGhw",
+        "return": return_b64,
         token: "1",
     }
 
     post_resp = session.post(POST_URL, data=payload, timeout=30, allow_redirects=True)
 
     body = post_resp.text
+    out_file = Path(__file__).resolve().parents[1] / 'upgrade_backups' / 'admin_login_last_response.html'
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(body, encoding='utf-8', errors='ignore')
     body_l = body.lower()
 
     success_markers = [
@@ -67,6 +74,7 @@ def main() -> int:
     print("GET_STATUS", get_resp.status_code)
     print("POST_STATUS", post_resp.status_code)
     print("FINAL_URL", post_resp.url)
+    print("RESPONSE_FILE", str(out_file))
     print("LOGIN_SUCCESS", "YES" if success and not has_error else "NO")
 
     if not success or has_error:

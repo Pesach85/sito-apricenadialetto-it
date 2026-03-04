@@ -27,6 +27,7 @@ if (version_compare(PHP_VERSION, JOOMLA_MINIMUM_PHP, '<')) {
  * define() is used rather than "const" to not error for PHP 5.2 and lower
  */
 define('_JEXEC', 1);
+require_once dirname(__FILE__) . '/includes/legacy_dispatcher_polyfill.php';
 
 // Run the application - All executable code should be triggered through this file
 require_once dirname(__FILE__) . '/includes/app.php';

@@ -257,6 +257,14 @@ class JUser extends JObject
 		return self::$instances[$id];
 	}
 
+	protected function ensureParamsRegistry()
+	{
+		if (!($this->_params instanceof JRegistry))
+		{
+			$this->_params = new JRegistry;
+		}
+	}
+
 	/**
 	 * Method to get a parameter value
 	 *
@@ -269,6 +277,7 @@ class JUser extends JObject
 	 */
 	public function getParam($key, $default = null)
 	{
+		$this->ensureParamsRegistry();
 		return $this->_params->get($key, $default);
 	}
 
@@ -284,6 +293,7 @@ class JUser extends JObject
 	 */
 	public function setParam($key, $value)
 	{
+		$this->ensureParamsRegistry();
 		return $this->_params->set($key, $value);
 	}
 
@@ -299,6 +309,7 @@ class JUser extends JObject
 	 */
 	public function defParam($key, $value)
 	{
+		$this->ensureParamsRegistry();
 		return $this->_params->def($key, $value);
 	}
 
@@ -495,6 +506,8 @@ class JUser extends JObject
 	{
 		static $parampath;
 
+		$this->ensureParamsRegistry();
+
 		// Set a custom parampath if defined
 		if (isset($path))
 		{
@@ -534,7 +547,23 @@ class JUser extends JObject
 	 */
 	public function setParameters($params)
 	{
-		$this->_params = $params;
+		if ($params instanceof JRegistry)
+		{
+			$this->_params = $params;
+		}
+		else
+		{
+			$this->_params = new JRegistry;
+
+			if (is_array($params))
+			{
+				$this->_params->loadArray($params);
+			}
+			elseif (is_string($params) && $params !== '')
+			{
+				$this->_params->loadString($params);
+			}
+		}
 	}
 
 	/**
@@ -657,6 +686,7 @@ class JUser extends JObject
 		if (array_key_exists('params', $array))
 		{
 			$params = '';
+			$this->ensureParamsRegistry();
 
 			$this->_params->loadArray($array['params']);
 
@@ -700,6 +730,7 @@ class JUser extends JObject
 	{
 		// Create the user table object
 		$table = $this->getTable();
+		$this->ensureParamsRegistry();
 		$this->params = (string) $this->_params;
 		$table->bind($this->getProperties());
 
@@ -875,6 +906,7 @@ class JUser extends JObject
 		// extend this in the future to allow for the ability to have custom
 		// user parameters, but for right now we'll leave it how it is.
 
+		$this->ensureParamsRegistry();
 		$this->_params->loadString($table->params);
 
 		// Assuming all is well at this point lets bind the data
