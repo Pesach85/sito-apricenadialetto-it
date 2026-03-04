@@ -22,3 +22,6 @@ Thumbs.db
 .DS_Store
 deploy/_live_*.html
 deploy/__pycache__/
+
+# Generated smoke/backup artifacts
+upgrade_backups/
