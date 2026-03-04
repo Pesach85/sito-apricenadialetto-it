@@ -15,6 +15,7 @@ ROUTES = [
     "index.php?option=com_templates&view=templates",
     "index.php?option=com_menus&view=menus",
     "index.php?option=com_content&view=articles",
+    "index.php?option=com_content&task=article.add",
     "index.php?option=com_plugins&view=plugins",
     "index.php?option=com_installer&view=manage",
     "index.php?option=com_modules&view=modules&client_id=1",
