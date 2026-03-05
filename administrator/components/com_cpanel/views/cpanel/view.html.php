@@ -1,43 +1,66 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_cpanel
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_cpanel
+ *
+ * @copyright   (C) 2008 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die;
-
-jimport('joomla.application.component.view');
-jimport('joomla.application.module.helper');
 
 /**
  * HTML View class for the Cpanel component
  *
- * @static
- * @package		Joomla.Administrator
- * @subpackage	com_cpanel
- * @since 1.0
+ * @since  1.0
  */
-class CpanelViewCpanel extends JView
+class CpanelViewCpanel extends JViewLegacy
 {
+	/**
+	 * Array of cpanel modules
+	 *
+	 * @var  array
+	 */
 	protected $modules = null;
 
+	/**
+	 * Execute and display a template script.
+	 *
+	 * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
+	 *
+	 * @return  mixed  A string if successful, otherwise an Error object.
+	 */
 	public function display($tpl = null)
 	{
 		// Set toolbar items for the page
-		JToolBarHelper::title(JText::_('COM_CPANEL'), 'cpanel.png');
-		JToolBarHelper::help('screen.cpanel');
+		JToolbarHelper::title(JText::_('COM_CPANEL'), 'home-2 cpanel');
+		JToolbarHelper::help('screen.cpanel');
+
+		$input = JFactory::getApplication()->input;
 
 		/*
 		 * Set the template - this will display cpanel.php
 		 * from the selected admin template.
 		 */
-		JRequest::setVar('tmpl', 'cpanel');
+		$input->set('tmpl', 'cpanel');
 
 		// Display the cpanel modules
 		$this->modules = JModuleHelper::getModules('cpanel');
+
+		try
+		{
+			$messages_model = FOFModel::getTmpInstance('Messages', 'PostinstallModel')->eid(700);
+			$messages       = $messages_model->getItemList();
+		}
+		catch (RuntimeException $e)
+		{
+			$messages = array();
+
+			// Still render the error message from the Exception object
+			JFactory::getApplication()->enqueueMessage($e->getMessage(), 'error');
+		}
+
+		$this->postinstall_message_count = count($messages);
 
 		parent::display($tpl);
 	}

@@ -1,22 +1,30 @@
 <?php
 /**
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_menus
+ *
+ * @copyright   (C) 2009 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
-jimport( 'joomla.application.component.controlleradmin' );
+use Joomla\Utilities\ArrayHelper;
 
 /**
  * The Menu Item Controller
  *
- * @package		Joomla.Administrator
- * @subpackage	com_menus
- * @since		1.6
+ * @since  1.6
  */
 class MenusControllerItems extends JControllerAdmin
 {
+	/**
+	 * Constructor
+	 *
+	 * @param   array  $config  Optional configuration array
+	 *
+	 * @since   1.6
+	 */
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
@@ -24,10 +32,17 @@ class MenusControllerItems extends JControllerAdmin
 	}
 
 	/**
-	 * Proxy for getModel
-	 * @since	1.6
+	 * Proxy for getModel.
+	 *
+	 * @param   string  $name    The model name. Optional.
+	 * @param   string  $prefix  The class prefix. Optional.
+	 * @param   array   $config  Configuration array for model. Optional.
+	 *
+	 * @return  object  The model.
+	 *
+	 * @since   1.6
 	 */
-	function getModel($name = 'Item', $prefix = 'MenusModel', $config = array())
+	public function getModel($name = 'Item', $prefix = 'MenusModel', $config = array())
 	{
 		return parent::getModel($name, $prefix, array('ignore_request' => true));
 	}
@@ -35,36 +50,62 @@ class MenusControllerItems extends JControllerAdmin
 	/**
 	 * Rebuild the nested set tree.
 	 *
-	 * @return	bool	False on failure or error, true on success.
-	 * @since	1.6
+	 * @return  boolean  False on failure or error, true on success.
+	 *
+	 * @since   1.6
 	 */
 	public function rebuild()
 	{
-		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		$this->checkToken();
 
 		$this->setRedirect('index.php?option=com_menus&view=items');
 
-		// Initialise variables.
 		$model = $this->getModel();
 
-		if ($model->rebuild()) {
+		if ($model->rebuild())
+		{
 			// Reorder succeeded.
 			$this->setMessage(JText::_('COM_MENUS_ITEMS_REBUILD_SUCCESS'));
+
 			return true;
-		} else {
+		}
+		else
+		{
 			// Rebuild failed.
-			$this->setMessage(JText::sprintf('COM_MENUS_ITEMS_REBUILD_FAILED'));
+			$this->setMessage(JText::sprintf('COM_MENUS_ITEMS_REBUILD_FAILED'), 'error');
+
 			return false;
 		}
 	}
 
+	/**
+	 * Save the manual order inputs from the menu items list view
+	 *
+	 * @return      void
+	 *
+	 * @see         JControllerAdmin::saveorder()
+	 * @deprecated  4.0
+	 */
 	public function saveorder()
 	{
-		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		$this->checkToken();
+
+		try
+		{
+			JLog::add(
+				sprintf('%s() is deprecated. Function will be removed in 4.0.', __METHOD__),
+				JLog::WARNING,
+				'deprecated'
+			);
+		}
+		catch (RuntimeException $exception)
+		{
+			// Informational log only
+		}
 
 		// Get the arrays from the Request
-		$order	= JRequest::getVar('order',	null,	'post',	'array');
-		$originalOrder = explode(',', JRequest::getString('original_order_values'));
+		$order = $this->input->post->get('order', null, 'array');
+		$originalOrder = explode(',', $this->input->getString('original_order_values'));
 
 		// Make sure something has changed
 		if (!($order === $originalOrder))
@@ -74,7 +115,8 @@ class MenusControllerItems extends JControllerAdmin
 		else
 		{
 			// Nothing to reorder
-			$this->setRedirect(JRoute::_('index.php?option='.$this->option.'&view='.$this->view_list, false));
+			$this->setRedirect(JRoute::_('index.php?option=' . $this->option . '&view=' . $this->view_list, false));
+
 			return true;
 		}
 	}
@@ -82,42 +124,197 @@ class MenusControllerItems extends JControllerAdmin
 	/**
 	 * Method to set the home property for a list of items
 	 *
-	 * @since	1.6
+	 * @return  void
+	 *
+	 * @since   1.6
 	 */
-	function setDefault()
+	public function setDefault()
 	{
 		// Check for request forgeries
-		JSession::checkToken('request') or die(JText::_('JINVALID_TOKEN'));
+		$this->checkToken('request');
+
+		$app = JFactory::getApplication();
 
 		// Get items to publish from the request.
-		$cid	= JRequest::getVar('cid', array(), '', 'array');
-		$data	= array('setDefault' => 1, 'unsetDefault' => 0);
-		$task 	= $this->getTask();
-		$value	= JArrayHelper::getValue($data, $task, 0, 'int');
+		$cid   = (array) $this->input->get('cid', array(), 'int');
+		$data  = array('setDefault' => 1, 'unsetDefault' => 0);
+		$task  = $this->getTask();
+		$value = ArrayHelper::getValue($data, $task, 0, 'int');
 
-		if (empty($cid)) {
-			JError::raiseWarning(500, JText::_($this->text_prefix.'_NO_ITEM_SELECTED'));
-		} else {
+		// Remove zero values resulting from input filter
+		$cid = array_filter($cid);
+
+		if (empty($cid))
+		{
+			JError::raiseWarning(500, JText::_($this->text_prefix . '_NO_ITEM_SELECTED'));
+		}
+		else
+		{
 			// Get the model.
 			$model = $this->getModel();
 
-			// Make sure the item ids are integers
-			JArrayHelper::toInteger($cid);
-
 			// Publish the items.
-			if (!$model->setHome($cid, $value)) {
+			if (!$model->setHome($cid, $value))
+			{
 				JError::raiseWarning(500, $model->getError());
-			} else {
-				if ($value == 1) {
+			}
+			else
+			{
+				if ($value == 1)
+				{
 					$ntext = 'COM_MENUS_ITEMS_SET_HOME';
 				}
-				else {
+				else
+				{
 					$ntext = 'COM_MENUS_ITEMS_UNSET_HOME';
 				}
+
 				$this->setMessage(JText::plural($ntext, count($cid)));
 			}
 		}
 
-		$this->setRedirect(JRoute::_('index.php?option='.$this->option.'&view='.$this->view_list, false));
+		$this->setRedirect(
+			JRoute::_(
+				'index.php?option=' . $this->option . '&view=' . $this->view_list
+				. '&menutype=' . $app->getUserState('com_menus.items.menutype'), false
+			)
+		);
+	}
+
+	/**
+	 * Method to publish a list of items
+	 *
+	 * @return  void
+	 *
+	 * @since   3.6.0
+	 */
+	public function publish()
+	{
+		// Check for request forgeries
+		$this->checkToken();
+
+		// Get items to publish from the request.
+		$cid = (array) JFactory::getApplication()->input->get('cid', array(), 'int');
+		$data = array('publish' => 1, 'unpublish' => 0, 'trash' => -2, 'report' => -3);
+		$task = $this->getTask();
+		$value = ArrayHelper::getValue($data, $task, 0, 'int');
+
+		// Remove zero values resulting from input filter
+		$cid = array_filter($cid);
+
+		if (empty($cid))
+		{
+			try
+			{
+				JLog::add(JText::_($this->text_prefix . '_NO_ITEM_SELECTED'), JLog::WARNING, 'jerror');
+			}
+			catch (RuntimeException $exception)
+			{
+				JFactory::getApplication()->enqueueMessage(JText::_($this->text_prefix . '_NO_ITEM_SELECTED'), 'warning');
+			}
+		}
+		else
+		{
+			// Get the model.
+			$model = $this->getModel();
+
+			// Publish the items.
+			try
+			{
+				$model->publish($cid, $value);
+				$errors      = $model->getErrors();
+				$messageType = 'message';
+
+				if ($value == 1)
+				{
+					if ($errors)
+					{
+						$messageType = 'error';
+						$ntext       = $this->text_prefix . '_N_ITEMS_FAILED_PUBLISHING';
+					}
+					else
+					{
+						$ntext = $this->text_prefix . '_N_ITEMS_PUBLISHED';
+					}
+				}
+				elseif ($value == 0)
+				{
+					$ntext = $this->text_prefix . '_N_ITEMS_UNPUBLISHED';
+				}
+				else
+				{
+					$ntext = $this->text_prefix . '_N_ITEMS_TRASHED';
+				}
+
+				$this->setMessage(JText::plural($ntext, count($cid)), $messageType);
+			}
+			catch (Exception $e)
+			{
+				$this->setMessage($e->getMessage(), 'error');
+			}
+		}
+
+		$this->setRedirect(
+			JRoute::_(
+				'index.php?option=' . $this->option . '&view=' . $this->view_list . '&menutype=' .
+				JFactory::getApplication()->getUserState('com_menus.items.menutype'),
+				false
+			)
+		);
+	}
+
+	/**
+	 * Check in of one or more records.
+	 *
+	 * @return  boolean  True on success
+	 *
+	 * @since   3.6.0
+	 */
+	public function checkin()
+	{
+		// Check for request forgeries.
+		$this->checkToken();
+
+		// Read the Ids from the post data
+		$cid = (array) JFactory::getApplication()->input->post->get('cid', array(), 'int');
+
+		// Remove zero values resulting from input filter
+		$cid = array_filter($cid);
+
+		// Run the model
+		$model  = $this->getModel();
+		$return = $model->checkin($cid);
+
+		if ($return === false)
+		{
+			// Checkin failed.
+			$message = JText::sprintf('JLIB_APPLICATION_ERROR_CHECKIN_FAILED', $model->getError());
+			$this->setRedirect(
+				JRoute::_(
+					'index.php?option=' . $this->option . '&view=' . $this->view_list
+					. '&menutype=' . JFactory::getApplication()->getUserState('com_menus.items.menutype'),
+					false
+				),
+				$message,
+				'error'
+			);
+
+			return false;
+		}
+		else
+		{
+			// Checkin succeeded.
+			$message = JText::plural($this->text_prefix . '_N_ITEMS_CHECKED_IN', count($cid));
+			$this->setRedirect(
+				JRoute::_(
+					'index.php?option=' . $this->option . '&view=' . $this->view_list
+					. '&menutype=' . JFactory::getApplication()->getUserState('com_menus.items.menutype'),
+					false
+				),
+				$message
+			);
+
+			return true;
+		}
 	}
 }

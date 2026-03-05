@@ -85,6 +85,31 @@ if (!class_exists('JRequest')) {
 			}
 		}
 
+		public static function _cleanVar($var, $mask = 0, $type = null, $length = null)
+		{
+			if (is_array($var)) {
+				$clean = array();
+
+				foreach ($var as $key => $value) {
+					$clean[$key] = self::_cleanVar($value, $mask, $type, $length);
+				}
+
+				return $clean;
+			}
+
+			if ($type === null || $type === '' || strtolower((string) $type) === 'none') {
+				return $var;
+			}
+
+			$value = self::sanitizeFallback($var, $type);
+
+			if (is_string($value) && $length !== null && is_numeric($length) && (int) $length > 0) {
+				$value = substr($value, 0, (int) $length);
+			}
+
+			return $value;
+		}
+
 		public static function getVar($name, $default = null, $hash = 'default', $type = 'none', $mask = 0)
 		{
 			$input = self::getInput();

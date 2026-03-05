@@ -1,71 +1,51 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_config
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_config
+ *
+ * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access
 defined('_JEXEC') or die;
-
-jimport('joomla.application.component.controller');
 
 /**
  * Config Component Controller
  *
- * @package		Joomla.Administrator
- * @subpackage	com_config
- * @since 1.5
+ * @since  1.5
  */
-class ConfigController extends JController
+class ConfigController extends JControllerLegacy
 {
 	/**
-	 * @var		string	The default view.
-	 * @since	1.6
+	 * @var    string  The default view.
+	 * @since  1.6
 	 */
 	protected $default_view = 'application';
 
 	/**
 	 * Method to display the view.
 	 *
-	 * @param	boolean			If true, the view output will be cached
-	 * @param	array			An array of safe url parameters and their variable types, for valid values see {@link JFilterInput::clean()}.
+	 * @param   boolean  $cachable   If true, the view output will be cached
+	 * @param   array    $urlparams  An array of safe URL parameters and their variable types, for valid values see {@link JFilterInput::clean()}.
 	 *
-	 * @return	JController		This object to support chaining.
-	 * @since	1.5
+	 * @return  ConfigController  This object to support chaining.
+	 *
+	 * @since   1.5
 	 */
-	public function display($cachable = false, $urlparams = false)
+	public function display($cachable = false, $urlparams = array())
 	{
-		// Get the document object.
-		$document	= JFactory::getDocument();
-
 		// Set the default view name and format from the Request.
-		$vName		= JRequest::getCmd('view', 'application');
-		$vFormat	= $document->getType();
-		$lName		= JRequest::getCmd('layout', 'default');
+		$vName = $this->input->get('view', 'application');
 
-		// Get and render the view.
-		if ($view = $this->getView($vName, $vFormat)) {
-			if ($vName != 'close') {
-				// Get the model for the view.
-				$model = $this->getModel($vName);
-
-				// Access check.
-				if (!JFactory::getUser()->authorise('core.admin', $model->getState('component.option'))) {
-					return JError::raiseWarning(404, JText::_('JERROR_ALERTNOAUTHOR'));
-				}
-
-				// Push the model into the view (as default).
-				$view->setModel($model, true);
-			}
-
-			$view->setLayout($lName);
-
-			// Push document object into the view.
-			$view->assignRef('document', $document);
-
-			$view->display();
+		if (ucfirst($vName) == 'Application')
+		{
+			$controller = new ConfigControllerApplicationDisplay;
 		}
+		elseif (ucfirst($vName) == 'Component')
+		{
+			$controller = new ConfigControllerComponentDisplay;
+		}
+
+		return $controller->execute();
 	}
 }

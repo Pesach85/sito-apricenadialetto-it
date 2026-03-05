@@ -1,23 +1,20 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_installer
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
- * @since		1.0
+ * @package     Joomla.Administrator
+ * @subpackage  com_installer
+ *
+ * @copyright   (C) 2005 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// no direct access
 defined('_JEXEC') or die;
+JHtml::_('behavior.tabstate');
 
-// Access check.
-if (!JFactory::getUser()->authorise('core.manage', 'com_installer')) {
-	return JError::raiseWarning(404, JText::_('JERROR_ALERTNOAUTHOR'));
+if (!JFactory::getUser()->authorise('core.manage', 'com_installer'))
+{
+	throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 }
 
-// Include dependancies
-jimport('joomla.application.component.controller');
-
-$controller	= JController::getInstance('Installer');
-$controller->execute(JRequest::getCmd('task'));
+$controller = JControllerLegacy::getInstance('Installer');
+$controller->execute(JFactory::getApplication()->input->get('task'));
 $controller->redirect();

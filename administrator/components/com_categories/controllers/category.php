@@ -3,20 +3,18 @@
  * @package     Joomla.Administrator
  * @subpackage  com_categories
  *
- * @copyright   Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright   (C) 2009 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.controllerform');
+use Joomla\Registry\Registry;
 
 /**
  * The Category Controller
  *
- * @package     Joomla.Administrator
- * @subpackage  com_categories
- * @since       1.6
+ * @since  1.6
  */
 class CategoriesControllerCategory extends JControllerForm
 {
@@ -31,10 +29,10 @@ class CategoriesControllerCategory extends JControllerForm
 	/**
 	 * Constructor.
 	 *
-	 * @param  array  $config  An optional associative array of configuration settings.
+	 * @param   array  $config  An optional associative array of configuration settings.
 	 *
 	 * @since  1.6
-	 * @see    JController
+	 * @see    JControllerLegacy
 	 */
 	public function __construct($config = array())
 	{
@@ -43,7 +41,7 @@ class CategoriesControllerCategory extends JControllerForm
 		// Guess the JText message prefix. Defaults to the option.
 		if (empty($this->extension))
 		{
-			$this->extension = JRequest::getCmd('extension', 'com_content');
+			$this->extension = $this->input->get('extension', 'com_content');
 		}
 	}
 
@@ -59,6 +57,7 @@ class CategoriesControllerCategory extends JControllerForm
 	protected function allowAdd($data = array())
 	{
 		$user = JFactory::getUser();
+
 		return ($user->authorise('core.create', $this->extension) || count($user->getAuthorisedCategories($this->extension, 'core.create')));
 	}
 
@@ -74,49 +73,77 @@ class CategoriesControllerCategory extends JControllerForm
 	 */
 	protected function allowEdit($data = array(), $key = 'parent_id')
 	{
-		// Initialise variables.
 		$recordId = (int) isset($data[$key]) ? $data[$key] : 0;
 		$user = JFactory::getUser();
-		$userId = $user->get('id');
 
-		// Check general edit permission first.
-		if ($user->authorise('core.edit', $this->extension))
-		{
-			return true;
-		}
-
-		// Check specific edit permission.
+		// Check "edit" permission on record asset (explicit or inherited)
 		if ($user->authorise('core.edit', $this->extension . '.category.' . $recordId))
 		{
 			return true;
 		}
 
-		// Fallback on edit.own.
-		// First test if the permission is available.
-		if ($user->authorise('core.edit.own', $this->extension . '.category.' . $recordId) || $user->authorise('core.edit.own', $this->extension))
+		// Check "edit own" permission on record asset (explicit or inherited)
+		if ($user->authorise('core.edit.own', $this->extension . '.category.' . $recordId))
 		{
-			// Now test the owner is the user.
-			$ownerId = (int) isset($data['created_user_id']) ? $data['created_user_id'] : 0;
-			if (empty($ownerId) && $recordId)
+			// Need to do a lookup from the model to get the owner
+			$record = $this->getModel()->getItem($recordId);
+
+			if (empty($record))
 			{
-				// Need to do a lookup from the model.
-				$record = $this->getModel()->getItem($recordId);
-
-				if (empty($record))
-				{
-					return false;
-				}
-
-				$ownerId = $record->created_user_id;
+				return false;
 			}
 
+			$ownerId = $record->created_user_id;
+
 			// If the owner matches 'me' then do the test.
-			if ($ownerId == $userId)
+			if ($ownerId == $user->id)
 			{
 				return true;
 			}
 		}
+
 		return false;
+	}
+
+	/**
+	 * Override parent save method to store form data with right key as expected by edit category page
+	 *
+	 * @param   string  $key     The name of the primary key of the URL variable.
+	 * @param   string  $urlVar  The name of the URL variable if different from the primary key (sometimes required to avoid router collisions).
+	 *
+	 * @return  boolean  True if successful, false otherwise.
+	 *
+	 * @since   3.10.3
+	 */
+	public function save($key = null, $urlVar = null)
+	{
+		$result = parent::save($key, $urlVar);
+
+		$oldKey = $this->option . '.edit.category.data';
+		$newKey = $this->option . '.edit.category.' . substr($this->extension, 4) . '.data';
+		$app    = JFactory::getApplication();
+		$app->setUserState($newKey, $app->getUserState($oldKey));
+
+		return $result;
+	}
+
+	/**
+	 * Override cancel method to clear form data for a failed edit action
+	 *
+	 * @param   string  $key  The name of the primary key of the URL variable.
+	 *
+	 * @return  boolean  True if access level checks pass, false otherwise.
+	 *
+	 * @since   3.10.3
+	 */
+	public function cancel($key = null)
+	{
+		$result = parent::cancel($key);
+
+		$newKey = $this->option . '.edit.category.' . substr($this->extension, 4) . '.data';
+		JFactory::getApplication()->setUserState($newKey, null);
+
+		return $result;
 	}
 
 	/**
@@ -124,15 +151,16 @@ class CategoriesControllerCategory extends JControllerForm
 	 *
 	 * @param   object  $model  The model.
 	 *
-	 * @return  boolean	 True if successful, false otherwise and internal error is set.
+	 * @return  boolean  True if successful, false otherwise and internal error is set.
 	 *
 	 * @since   1.6
 	 */
 	public function batch($model = null)
 	{
-		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		$this->checkToken();
 
 		// Set the model
+		/** @var CategoriesModelCategory $model */
 		$model = $this->getModel('Category');
 
 		// Preset the redirect
@@ -172,5 +200,32 @@ class CategoriesControllerCategory extends JControllerForm
 		$append .= '&extension=' . $this->extension;
 
 		return $append;
+	}
+
+	/**
+	 * Function that allows child controller access to model data after the data has been saved.
+	 *
+	 * @param   JModelLegacy  $model      The data model object.
+	 * @param   array         $validData  The validated data.
+	 *
+	 * @return  void
+	 *
+	 * @since   3.1
+	 */
+	protected function postSaveHook(JModelLegacy $model, $validData = array())
+	{
+		$item = $model->getItem();
+
+		if (isset($item->params) && is_array($item->params))
+		{
+			$registry = new Registry($item->params);
+			$item->params = (string) $registry;
+		}
+
+		if (isset($item->metadata) && is_array($item->metadata))
+		{
+			$registry = new Registry($item->metadata);
+			$item->metadata = (string) $registry;
+		}
 	}
 }

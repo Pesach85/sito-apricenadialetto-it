@@ -1,58 +1,129 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_installer
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_installer
+ *
+ * @copyright   (C) 2008 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access.
 defined('_JEXEC') or die;
 
-// Import library dependencies
-require_once dirname(__FILE__) . '/extension.php';
+use Joomla\Utilities\ArrayHelper;
+
+JLoader::register('InstallerModel', __DIR__ . '/extension.php');
 
 /**
- * Installer Manage Model
+ * Installer Discover Model
  *
- * @package		Joomla.Administrator
- * @subpackage	com_installer
- * @since		1.6
+ * @since  1.6
  */
 class InstallerModelDiscover extends InstallerModel
 {
-	protected $_context = 'com_installer.discover';
+	/**
+	 * Constructor.
+	 *
+	 * @param   array  $config  An optional associative array of configuration settings.
+	 *
+	 * @see     JController
+	 * @since   3.5
+	 */
+	public function __construct($config = array())
+	{
+		if (empty($config['filter_fields']))
+		{
+			$config['filter_fields'] = array(
+				'name',
+				'client_id',
+				'client', 'client_translated',
+				'type', 'type_translated',
+				'folder', 'folder_translated',
+				'extension_id',
+			);
+		}
+
+		parent::__construct($config);
+	}
 
 	/**
 	 * Method to auto-populate the model state.
 	 *
 	 * Note. Calling getState in this method will result in recursion.
 	 *
-	 * @since	1.6
+	 * @param   string  $ordering   An optional ordering field.
+	 * @param   string  $direction  An optional direction (asc|desc).
+	 *
+	 * @return  void
+	 *
+	 * @since   3.1
 	 */
-	protected function populateState($ordering = null, $direction = null)
+	protected function populateState($ordering = 'name', $direction = 'asc')
 	{
 		$app = JFactory::getApplication();
+
+		// Load the filter state.
+		$this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
+		$this->setState('filter.client_id', $this->getUserStateFromRequest($this->context . '.filter.client_id', 'filter_client_id', null, 'int'));
+		$this->setState('filter.type', $this->getUserStateFromRequest($this->context . '.filter.type', 'filter_type', '', 'string'));
+		$this->setState('filter.folder', $this->getUserStateFromRequest($this->context . '.filter.folder', 'filter_folder', '', 'string'));
+
 		$this->setState('message', $app->getUserState('com_installer.message'));
 		$this->setState('extension_message', $app->getUserState('com_installer.extension_message'));
+
 		$app->setUserState('com_installer.message', '');
 		$app->setUserState('com_installer.extension_message', '');
-		parent::populateState('name', 'asc');
+
+		parent::populateState($ordering, $direction);
 	}
 
 	/**
 	 * Method to get the database query.
 	 *
-	 * @return	JDatabaseQuery the database query
-	 * @since	1.6
+	 * @return  JDatabaseQuery  the database query
+	 *
+	 * @since   3.1
 	 */
 	protected function getListQuery()
 	{
-		$db		= JFactory::getDBO();
-		$query = $db->getQuery(true);
-		$query->select('*');
-		$query->from('#__extensions');
-		$query->where('state=-1');
+		$db = $this->getDbo();
+		$query = $db->getQuery(true)
+			->select('*')
+			->from($db->quoteName('#__extensions'))
+			->where($db->quoteName('state') . ' = -1');
+
+		// Process select filters.
+		$type     = $this->getState('filter.type');
+		$clientId = $this->getState('filter.client_id');
+		$folder   = $this->getState('filter.folder');
+
+		if ($type)
+		{
+			$query->where($db->quoteName('type') . ' = ' . $db->quote($type));
+		}
+
+		if ($clientId != '')
+		{
+			$query->where($db->quoteName('client_id') . ' = ' . (int) $clientId);
+		}
+
+		if ($folder != '' && in_array($type, array('plugin', 'library', '')))
+		{
+			$query->where($db->quoteName('folder') . ' = ' . $db->quote($folder == '*' ? '' : $folder));
+		}
+
+		// Process search filter.
+		$search = $this->getState('filter.search');
+
+		if (!empty($search))
+		{
+			if (stripos($search, 'id:') === 0)
+			{
+				$query->where($db->quoteName('extension_id') . ' = ' . (int) substr($search, 3));
+			}
+		}
+
+		// Note: The search for name, ordering and pagination are processed by the parent InstallerModel class (in extension.php).
+
 		return $query;
 	}
 
@@ -61,34 +132,42 @@ class InstallerModelDiscover extends InstallerModel
 	 *
 	 * Finds uninstalled extensions
 	 *
-	 * @since	1.6
+	 * @return  void
+	 *
+	 * @since   1.6
 	 */
-	function discover()
+	public function discover()
 	{
-		$installer	= JInstaller::getInstance();
-		$results	= $installer->discover();
+		// Purge the list of discovered extensions and fetch them again.
+		$this->purge();
+		$results = JInstaller::getInstance()->discover();
 
 		// Get all templates, including discovered ones
-		$query = 'SELECT extension_id, element, folder, client_id, type FROM #__extensions';
-		$dbo = JFactory::getDBO();
-		$dbo->setQuery($query);
-		$installedtmp = $dbo->loadObjectList();
+		$db = $this->getDbo();
+		$query = $db->getQuery(true)
+			->select($db->quoteName(array('extension_id', 'element', 'folder', 'client_id', 'type')))
+			->from($db->quoteName('#__extensions'));
+		$db->setQuery($query);
+		$installedtmp = $db->loadObjectList();
+
 		$extensions = array();
 
-		foreach($installedtmp as $install)
+		foreach ($installedtmp as $install)
 		{
 			$key = implode(':', array($install->type, $install->element, $install->folder, $install->client_id));
 			$extensions[$key] = $install;
 		}
-		unset($installedtmp);
 
-
-		foreach($results as $result) {
-			// check if we have a match on the element
+		foreach ($results as $result)
+		{
+			// Check if we have a match on the element
 			$key = implode(':', array($result->type, $result->element, $result->folder, $result->client_id));
-			if(!array_key_exists($key, $extensions))
+
+			if (!array_key_exists($key, $extensions))
 			{
-				$result->store(); // put it into the table
+				// Put it into the table
+				$result->check();
+				$result->store();
 			}
 		}
 	}
@@ -96,35 +175,52 @@ class InstallerModelDiscover extends InstallerModel
 	/**
 	 * Installs a discovered extension.
 	 *
-	 * @since	1.6
+	 * @return  void
+	 *
+	 * @since   1.6
 	 */
-	function discover_install()
+	public function discover_install()
 	{
-		$app = JFactory::getApplication();
-		$installer = JInstaller::getInstance();
-		$eid = JRequest::getVar('cid', 0);
-		if (is_array($eid) || $eid) {
-			if (!is_array($eid)) {
+		$app   = JFactory::getApplication();
+		$input = $app->input;
+		$eid   = $input->get('cid', 0, 'array');
+
+		if (is_array($eid) || $eid)
+		{
+			if (!is_array($eid))
+			{
 				$eid = array($eid);
 			}
-			JArrayHelper::toInteger($eid);
-			$app = JFactory::getApplication();
+
+			$eid = ArrayHelper::toInteger($eid);
 			$failed = false;
-			foreach($eid as $id) {
+
+			foreach ($eid as $id)
+			{
+				$installer = new JInstaller;
+
 				$result = $installer->discover_install($id);
-				if (!$result) {
+
+				if (!$result)
+				{
 					$failed = true;
-					$app->enqueueMessage(JText::_('COM_INSTALLER_MSG_DISCOVER_INSTALLFAILED').': '. $id);
+					$app->enqueueMessage(JText::_('COM_INSTALLER_MSG_DISCOVER_INSTALLFAILED') . ': ' . $id);
 				}
 			}
+
+			// TODO - We are only receiving the message for the last JInstaller instance
 			$this->setState('action', 'remove');
 			$this->setState('name', $installer->get('name'));
 			$app->setUserState('com_installer.message', $installer->message);
 			$app->setUserState('com_installer.extension_message', $installer->get('extension_message'));
-			if (!$failed) {
+
+			if (!$failed)
+			{
 				$app->enqueueMessage(JText::_('COM_INSTALLER_MSG_DISCOVER_INSTALLSUCCESSFUL'));
 			}
-		} else {
+		}
+		else
+		{
 			$app->enqueueMessage(JText::_('COM_INSTALLER_MSG_DISCOVER_NOEXTENSIONSELECTED'));
 		}
 	}
@@ -132,22 +228,31 @@ class InstallerModelDiscover extends InstallerModel
 	/**
 	 * Cleans out the list of discovered extensions.
 	 *
-	 * @since	1.6
+	 * @return  boolean  True on success
+	 *
+	 * @since   1.6
 	 */
-	function purge()
+	public function purge()
 	{
-		$db		= JFactory::getDBO();
-		$query	= $db->getQuery(true);
-		$query->delete();
-		$query->from('#__extensions');
-		$query->where('state = -1');
-		$db->setQuery((string)$query);
-		if ($db->Query()) {
-			$this->_message = JText::_('COM_INSTALLER_MSG_DISCOVER_PURGEDDISCOVEREDEXTENSIONS');
-			return true;
-		} else {
+		$db = $this->getDbo();
+		$query = $db->getQuery(true)
+			->delete($db->quoteName('#__extensions'))
+			->where($db->quoteName('state') . ' = -1');
+		$db->setQuery($query);
+
+		try
+		{
+			$db->execute();
+		}
+		catch (JDatabaseExceptionExecuting $e)
+		{
 			$this->_message = JText::_('COM_INSTALLER_MSG_DISCOVER_FAILEDTOPURGEEXTENSIONS');
+
 			return false;
 		}
+
+		$this->_message = JText::_('COM_INSTALLER_MSG_DISCOVER_PURGEDDISCOVEREDEXTENSIONS');
+
+		return true;
 	}
 }

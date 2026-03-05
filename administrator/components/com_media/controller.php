@@ -1,73 +1,74 @@
 <?php
 /**
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_media
+ *
+ * @copyright   (C) 2007 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// no direct access
 defined('_JEXEC') or die;
-
-jimport('joomla.application.component.controller');
 
 /**
  * Media Manager Component Controller
  *
- * @package		Joomla.Administrator
- * @subpackage	com_media
- * @version 1.5
+ * @since  1.5
  */
-class MediaController extends JController
+class MediaController extends JControllerLegacy
 {
 	/**
 	 * Method to display a view.
 	 *
-	 * @param	boolean			If true, the view output will be cached
-	 * @param	array			An array of safe url parameters and their variable types, for valid values see {@link JFilterInput::clean()}.
+	 * @param   boolean  $cachable   If true, the view output will be cached
+	 * @param   array    $urlparams  An array of safe URL parameters and their variable types, for valid values see {@link JFilterInput::clean()}.
 	 *
-	 * @return	JController		This object to support chaining.
-	 * @since	1.5
+	 * @return  JController		This object to support chaining.
+	 *
+	 * @since   1.5
 	 */
 	public function display($cachable = false, $urlparams = false)
 	{
 		JPluginHelper::importPlugin('content');
-		$vName = JRequest::getCmd('view', 'media');
+
+		$vType    = JFactory::getDocument()->getType();
+		$vName    = $this->input->get('view', 'media');
+
 		switch ($vName)
 		{
 			case 'images':
-				$vLayout = JRequest::getCmd('layout', 'default');
-				$mName = 'manager';
+				$vLayout = $this->input->get('layout', 'default', 'string');
+				$mName   = 'manager';
 
 				break;
 
 			case 'imagesList':
-				$mName = 'list';
-				$vLayout = JRequest::getCmd('layout', 'default');
+				$mName   = 'list';
+				$vLayout = $this->input->get('layout', 'default', 'string');
 
 				break;
 
 			case 'mediaList':
-				$app	= JFactory::getApplication();
-				$mName = 'list';
+				$app     = JFactory::getApplication();
+				$mName   = 'list';
 				$vLayout = $app->getUserStateFromRequest('media.list.layout', 'layout', 'thumbs', 'word');
 
 				break;
 
 			case 'media':
 			default:
-				$vName = 'media';
-				$vLayout = JRequest::getCmd('layout', 'default');
-				$mName = 'manager';
+				$vName   = 'media';
+				$vLayout = $this->input->get('layout', 'default', 'string');
+				$mName   = 'manager';
+
 				break;
 		}
 
-		$document = JFactory::getDocument();
-		$vType		= $document->getType();
-
 		// Get/Create the view
-		$view = $this->getView($vName, $vType);
+		$view = $this->getView($vName, $vType, '', array('base_path' => JPATH_COMPONENT_ADMINISTRATOR));
 
 		// Get/Create the model
-		if ($model = $this->getModel($mName)) {
+		if ($model = $this->getModel($mName))
+		{
 			// Push the model into the view (as default)
 			$view->setModel($model, true);
 		}
@@ -81,7 +82,14 @@ class MediaController extends JController
 		return $this;
 	}
 
-	function ftpValidate()
+	/**
+	 * Validate FTP credentials
+	 *
+	 * @return  void
+	 *
+	 * @since   1.5
+	 */
+	public function ftpValidate()
 	{
 		// Set FTP credentials, if given
 		JClientHelper::setCredentialsFromRequest('ftp');

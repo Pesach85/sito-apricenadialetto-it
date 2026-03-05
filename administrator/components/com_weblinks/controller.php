@@ -30,13 +30,14 @@ class WeblinksController extends JController
 	public function display($cachable = false, $urlparams = false)
 	{
 		require_once JPATH_COMPONENT.'/helpers/weblinks.php';
+		$input = JFactory::getApplication()->input;
 
 		// Load the submenu.
-		WeblinksHelper::addSubmenu(JRequest::getCmd('view', 'weblinks'));
+		WeblinksHelper::addSubmenu($input->getCmd('view', 'weblinks'));
 
-		$view		= JRequest::getCmd('view', 'weblinks');
-		$layout 	= JRequest::getCmd('layout', 'default');
-		$id			= JRequest::getInt('id');
+		$view		= $input->getCmd('view', 'weblinks');
+		$layout 	= $input->getCmd('layout', 'default');
+		$id			= $input->getInt('id');
 
 		// Check for edit form.
 		if ($view == 'weblink' && $layout == 'edit' && !$this->checkEditId('com_weblinks.edit.weblink', $id)) {

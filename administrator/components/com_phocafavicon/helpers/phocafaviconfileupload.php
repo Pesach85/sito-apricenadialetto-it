@@ -33,20 +33,21 @@ class PhocaFaviconFileUpload
 	public function realSingleUpload( $frontEnd = 0 ) {
 
 		$app			= JFactory::getApplication();
-		JRequest::checkToken( 'request' ) or jexit( 'ERROR: '. JTEXT::_('COM_PHOCAFAVICON_INVALID_TOKEN'));
+		JSession::checkToken( 'request' ) or jexit( 'ERROR: '. JTEXT::_('COM_PHOCAFAVICON_INVALID_TOKEN'));
 		JResponse::allowCache(false);
+		$input			= $app->input;
 		
 		$path			= PhocaFaviconHelper::getPathSet();
-		$file 			= JRequest::getVar( 'Filedata', '', 'files', 'array' );
-		$folder			= JRequest::getVar( 'folder', '', '', 'path' );
-		$format			= JRequest::getVar( 'format', 'html', '', 'cmd');
-		$return			= JRequest::getVar( 'return-url', null, 'post', 'base64' );//includes field
-		$viewBack		= JRequest::getVar( 'viewback', '', '', '' );
-		$field			= JRequest::getVar( 'field' );
+		$file 			= $input->files->get( 'Filedata', '', 'array' );
+		$folder			= $input->get( 'folder', '', 'path' );
+		$format			= $input->get( 'format', 'html', 'cmd');
+		$return			= $input->post->get( 'return-url', null, 'base64' );//includes field
+		$viewBack		= $input->get( 'viewback', '', '' );
+		$field			= $input->get( 'field' );
 		$errUploadMsg	= '';
 		$folderUrl 		= $folder;
 		$tabUrl			= '';
-		$component		= JRequest::getVar( 'option', '', '', 'string' );
+		$component		= $input->get( 'option', '', 'string' );
 		
 		
 	

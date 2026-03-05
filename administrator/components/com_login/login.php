@@ -1,24 +1,23 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_login
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License, see LICENSE.php
+ * @package     Joomla.Administrator
+ * @subpackage  com_login
+ *
+ * @copyright   (C) 2005 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access.
 defined('_JEXEC') or die;
 
-// Require the base controller
-jimport('joomla.application.component.controller');
+$input = JFactory::getApplication()->input;
+$task = $input->get('task');
 
-$task = JRequest::getCmd('task');
 if ($task != 'login' && $task != 'logout')
 {
-	JRequest::setVar('task', '');
+	$input->set('task', '');
 	$task = '';
 }
 
-$controller	= JController::getInstance('Login');
+$controller = JControllerLegacy::getInstance('Login');
 $controller->execute($task);
 $controller->redirect();

@@ -52,11 +52,12 @@ class LiveUpdate
 	{
 		// Load language strings
 		self::loadLanguage();
+		$input = JFactory::getApplication()->input;
 		
 		// Load the controller and let it run the show
 		require_once dirname(__FILE__).'/classes/controller.php';
 		$controller = new LiveUpdateController();
-		$controller->execute(JRequest::getCmd('task','overview'));
+		$controller->execute($input->getCmd('task','overview'));
 		$controller->redirect();
 	}
 	
@@ -84,11 +85,12 @@ class LiveUpdate
 	{
 		// Load language strings
 		self::loadLanguage();
+		$input = JFactory::getApplication()->input;
 		
 		$defaultConfig = array(
-			'option'			=> JRequest::getCmd('option',''),
+			'option'			=> $input->getCmd('option',''),
 			'view'				=> 'liveupdate',
-			'mediaurl'			=> JURI::base().'components/'.JRequest::getCmd('option','').'/liveupdate/assets/'
+			'mediaurl'			=> JURI::base().'components/'.$input->getCmd('option','').'/liveupdate/assets/'
 		);
 		$c = array_merge($defaultConfig, $config);
 		

@@ -1,111 +1,107 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_categories
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_categories
+ *
+ * @copyright   (C) 2009 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// no direct access
 defined('_JEXEC') or die;
 
 // Include the component HTML helpers.
-JHtml::addIncludePath(JPATH_COMPONENT.'/helpers/html');
+JHtml::addIncludePath(JPATH_COMPONENT . '/helpers/html');
 
-// Load the tooltip behavior.
-JHtml::_('behavior.tooltip');
-JHtml::_('behavior.formvalidation');
+JHtml::_('behavior.formvalidator');
 JHtml::_('behavior.keepalive');
-?>
+JHtml::_('formbehavior.chosen', '#jform_tags', null, array('placeholder_text_multiple' => JText::_('JGLOBAL_TYPE_OR_SELECT_SOME_TAGS')));
+JHtml::_('formbehavior.chosen', 'select');
 
-<script type="text/javascript">
+$app = JFactory::getApplication();
+$input = $app->input;
+
+$assoc = JLanguageAssociations::isEnabled();
+// Are associations implemented for this extension?
+$extensionassoc = array_key_exists('item_associations', $this->form->getFieldsets());
+
+JFactory::getDocument()->addScriptDeclaration('
 	Joomla.submitbutton = function(task)
 	{
-		if (task == 'category.cancel' || document.formvalidator.isValid(document.id('item-form'))) {
-			<?php echo $this->form->getField('description')->save(); ?>
-			Joomla.submitform(task, document.getElementById('item-form'));
-		} else {
-			alert('<?php echo $this->escape(JText::_('JGLOBAL_VALIDATION_FORM_FAILED'));?>');
+		if (task == "category.cancel" || document.formvalidator.isValid(document.getElementById("item-form")))
+		{
+			jQuery("#permissions-sliders select").attr("disabled", "disabled");
+			' . $this->form->getField('description')->save() . '
+			Joomla.submitform(task, document.getElementById("item-form"));
+
+			// @deprecated 4.0  The following js is not needed since 3.7.0.
+			if (task !== "category.apply")
+			{
+				window.parent.jQuery("#categoryEdit' . $this->item->id . 'Modal").modal("hide");
+			}
 		}
-	}
-</script>
+	};
+');
 
-<form action="<?php echo JRoute::_('index.php?option=com_categories&extension='.JRequest::getCmd('extension', 'com_content').'&layout=edit&id='.(int) $this->item->id); ?>" method="post" name="adminForm" id="item-form" class="form-validate">
-	<div class="width-60 fltlft">
-		<fieldset class="adminform">
-			<legend><?php echo JText::_('COM_CATEGORIES_FIELDSET_DETAILS');?></legend>
-			<ul class="adminformlist">
-				<li><?php echo $this->form->getLabel('title'); ?>
-				<?php echo $this->form->getInput('title'); ?></li>
+// Fieldsets to not automatically render by /layouts/joomla/edit/params.php
+$this->ignore_fieldsets = array('jmetadata', 'item_associations');
 
-				<li><?php echo $this->form->getLabel('alias'); ?>
-				<?php echo $this->form->getInput('alias'); ?></li>
+// In case of modal
+$isModal = $input->get('layout') == 'modal' ? true : false;
+$layout  = $isModal ? 'modal' : 'edit';
+$tmpl    = $isModal || $input->get('tmpl', '', 'cmd') === 'component' ? '&tmpl=component' : '';
+?>
 
-				<li><?php echo $this->form->getLabel('extension'); ?>
-				<?php echo $this->form->getInput('extension'); ?></li>
+<form action="<?php echo JRoute::_('index.php?option=com_categories&extension=' . $input->getCmd('extension', 'com_content') . '&layout=' . $layout . $tmpl . '&id=' . (int) $this->item->id); ?>" method="post" name="adminForm" id="item-form" class="form-validate">
 
-				<li><?php echo $this->form->getLabel('parent_id'); ?>
-				<?php echo $this->form->getInput('parent_id'); ?></li>
+	<?php echo JLayoutHelper::render('joomla.edit.title_alias', $this); ?>
 
-				<li><?php echo $this->form->getLabel('published'); ?>
-				<?php echo $this->form->getInput('published'); ?></li>
+	<div class="form-horizontal">
+		<?php echo JHtml::_('bootstrap.startTabSet', 'myTab', array('active' => 'general')); ?>
 
-				<li><?php echo $this->form->getLabel('access'); ?>
-				<?php echo $this->form->getInput('access'); ?></li>
-
-				<?php if ($this->canDo->get('core.admin')): ?>
-					<li><span class="faux-label"><?php echo JText::_('JGLOBAL_ACTION_PERMISSIONS_LABEL'); ?></span>
-					<div class="button2-left"><div class="blank">
-		      			<button type="button" onclick="document.location.href='#access-rules';">
-		      			<?php echo JText::_('JGLOBAL_PERMISSIONS_ANCHOR'); ?></button>
-		      		</div></div>
-		    		</li>
-				<?php endif; ?>
-
-				<li><?php echo $this->form->getLabel('language'); ?>
-				<?php echo $this->form->getInput('language'); ?></li>
-
-				<li><?php echo $this->form->getLabel('id'); ?>
-				<?php echo $this->form->getInput('id'); ?></li>
-			</ul>
-			<div class="clr"></div>
-			<?php echo $this->form->getLabel('description'); ?>
-			<div class="clr"></div>
-			<?php echo $this->form->getInput('description'); ?>
-		</fieldset>
-	</div>
-
-	<div class="width-40 fltrt">
-
-		<?php echo JHtml::_('sliders.start', 'categories-sliders-'.$this->item->id, array('useCookie'=>1)); ?>
-			<?php echo $this->loadTemplate('options'); ?>
-			<div class="clr"></div>
-
-			<?php echo JHtml::_('sliders.panel', JText::_('JGLOBAL_FIELDSET_METADATA_OPTIONS'), 'meta-options'); ?>
-			<fieldset class="panelform">
-				<?php echo $this->loadTemplate('metadata'); ?>
-			</fieldset>
-
-		<?php echo JHtml::_('sliders.end'); ?>
-	</div>
-	<div class="clr"></div>
-
-	<?php if ($this->canDo->get('core.admin')): ?>
-		<div  class="width-100 fltlft">
-
-			<?php echo JHtml::_('sliders.start', 'permissions-sliders-'.$this->item->id, array('useCookie'=>1)); ?>
-
-			<?php echo JHtml::_('sliders.panel', JText::_('COM_CATEGORIES_FIELDSET_RULES'), 'access-rules'); ?>
-			<fieldset class="panelform">
-				<?php echo $this->form->getLabel('rules'); ?>
-				<?php echo $this->form->getInput('rules'); ?>
-			</fieldset>
-
-			<?php echo JHtml::_('sliders.end'); ?>
+		<?php echo JHtml::_('bootstrap.addTab', 'myTab', 'general', JText::_('JCATEGORY')); ?>
+		<div class="row-fluid">
+			<div class="span9">
+				<?php echo $this->form->getLabel('description'); ?>
+				<?php echo $this->form->getInput('description'); ?>
+			</div>
+			<div class="span3">
+				<?php echo JLayoutHelper::render('joomla.edit.global', $this); ?>
+			</div>
 		</div>
-	<?php endif; ?>
-	<div>
+		<?php echo JHtml::_('bootstrap.endTab'); ?>
+
+		<?php echo JLayoutHelper::render('joomla.edit.params', $this); ?>
+
+		<?php echo JHtml::_('bootstrap.addTab', 'myTab', 'publishing', JText::_('COM_CATEGORIES_FIELDSET_PUBLISHING')); ?>
+		<div class="row-fluid form-horizontal-desktop">
+			<div class="span6">
+				<?php echo JLayoutHelper::render('joomla.edit.publishingdata', $this); ?>
+			</div>
+			<div class="span6">
+				<?php echo JLayoutHelper::render('joomla.edit.metadata', $this); ?>
+			</div>
+		</div>
+		<?php echo JHtml::_('bootstrap.endTab'); ?>
+
+		<?php if ( ! $isModal && $assoc && $extensionassoc) : ?>
+			<?php echo JHtml::_('bootstrap.addTab', 'myTab', 'associations', JText::_('JGLOBAL_FIELDSET_ASSOCIATIONS')); ?>
+			<?php echo $this->loadTemplate('associations'); ?>
+			<?php echo JHtml::_('bootstrap.endTab'); ?>
+		<?php elseif ($isModal && $assoc && $extensionassoc) : ?>
+			<div class="hidden"><?php echo $this->loadTemplate('associations'); ?></div>
+		<?php endif; ?>
+
+		<?php if ($this->canDo->get('core.admin')) : ?>
+			<?php echo JHtml::_('bootstrap.addTab', 'myTab', 'rules', JText::_('COM_CATEGORIES_FIELDSET_RULES')); ?>
+			<?php echo $this->form->getInput('rules'); ?>
+			<?php echo JHtml::_('bootstrap.endTab'); ?>
+		<?php endif; ?>
+
+		<?php echo JHtml::_('bootstrap.endTabSet'); ?>
+
+		<?php echo $this->form->getInput('extension'); ?>
 		<input type="hidden" name="task" value="" />
+		<input type="hidden" name="forcedLanguage" value="<?php echo $input->get('forcedLanguage', '', 'cmd'); ?>" />
 		<?php echo JHtml::_('form.token'); ?>
 	</div>
 </form>

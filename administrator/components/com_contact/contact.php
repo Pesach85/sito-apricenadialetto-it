@@ -1,22 +1,20 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_contact
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_contact
+ *
+ * @copyright   (C) 2008 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// no direct access
 defined('_JEXEC') or die;
+JHtml::_('behavior.tabstate');
 
-// Access check.
-if (!JFactory::getUser()->authorise('core.manage', 'com_contact')) {
-	return JError::raiseWarning(404, JText::_('JERROR_ALERTNOAUTHOR'));
+if (!JFactory::getUser()->authorise('core.manage', 'com_contact'))
+{
+	throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 }
 
-// Include dependancies
-jimport('joomla.application.component.controller');
-
-$controller	= JController::getInstance('contact');
-$controller->execute(JRequest::getCmd('task'));
+$controller = JControllerLegacy::getInstance('contact');
+$controller->execute(JFactory::getApplication()->input->get('task'));
 $controller->redirect();

@@ -18,5 +18,5 @@ if (!JFactory::getUser()->authorise('core.manage', 'com_weblinks')) {
 jimport('joomla.application.component.controller');
 
 $controller	= JController::getInstance('Weblinks');
-$controller->execute(JRequest::getCmd('task'));
+$controller->execute(JFactory::getApplication()->input->getCmd('task'));
 $controller->redirect();

@@ -34,11 +34,12 @@ class TemplatesViewPrevuuw extends JView
 	{
 
 		require_once JPATH_COMPONENT.'/helpers/templates.php';
+		$input = JFactory::getApplication()->input;
 
 		// Initialise some variables
-		$this->client	= JApplicationHelper::getClientInfo(JRequest::getVar('client', '0', '', 'int'));
-		$this->id		= JRequest::getVar('id', '', 'method', 'int');
-		$this->option	= JRequest::getCmd('option');
+		$this->client	= JApplicationHelper::getClientInfo($input->getInt('client', 0));
+		$this->id		= $input->getInt('id');
+		$this->option	= $input->getCmd('option');
 		$this->template	= TemplatesHelper::getTemplateName($this->id);
 		$this->tp		= true;
 		$this->url		= $client->id ? JURI::base() : JURI::root();
